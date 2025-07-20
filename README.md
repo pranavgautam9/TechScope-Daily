@@ -6,9 +6,8 @@ A modern, AI-powered tech news platform that delivers personalized daily tech in
 
 - **Real-time News**: Latest tech news from multiple sources
 - **AI-Generated Content**: Personalized insights and summaries
-- **Breaking News Alerts**: Instant notifications for major tech events
+- **Unified News Feed**: Latest tech news with breaking news integration
 - **Stock Market Integration**: Real-time stock data and analysis
-- **Weekly Digests**: Curated weekly summaries
 - **Tech Facts**: Daily interesting tech facts and trivia
 - **Deep Dive Content**: In-depth analysis and trending topics
 
@@ -61,7 +60,7 @@ TechScope Daily/
    ```bash
    cd backend
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate  # On CMD: venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
@@ -99,7 +98,6 @@ TechScope Daily/
 - `GET /api/breaking-news` - Get breaking news alerts
 - `GET /api/stocks` - Get stock market data
 - `GET /api/facts` - Get daily tech facts
-- `GET /api/weekly` - Get weekly digest
 
 ## 🤝 Contributing
 

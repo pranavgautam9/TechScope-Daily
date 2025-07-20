@@ -9,7 +9,6 @@ import SlidingCards from './components/SlidingCards';
 import NewsSection from './components/NewsSection';
 import FactsSection from './components/FactsSection';
 import StocksSection from './components/StocksSection';
-import WeeklySection from './components/WeeklySection';
 import LoadingSpinner from './components/LoadingSpinner';
 
 const AppContainer = styled.div`
@@ -26,7 +25,7 @@ const MainContent = styled.main`
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<'news' | 'facts' | 'stocks' | 'weekly' | 'breaking'>('news');
+  const [activeSection, setActiveSection] = useState<'news' | 'facts' | 'stocks'>('news');
 
   useEffect(() => {
     // Simulate loading time

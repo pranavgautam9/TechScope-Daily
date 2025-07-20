@@ -64,16 +64,7 @@ class Stock(Base):
     market_cap = Column(Float)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
-class WeeklyContent(Base):
-    __tablename__ = "weekly_content"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    content = Column(Text)
-    category = Column(String)  # news, analysis, trends
-    source_news_id = Column(Integer)  # Reference to original news if moved from daily
-    created_at = Column(DateTime, default=datetime.utcnow)
-    week_number = Column(Integer)  # Week of the year
+
 
 # Create tables
 Base.metadata.create_all(bind=engine)
