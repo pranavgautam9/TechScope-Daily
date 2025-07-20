@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { motion } from 'framer-motion';
 import { FiExternalLink, FiClock, FiAlertTriangle, FiTrendingUp } from 'react-icons/fi';
 
@@ -45,7 +45,9 @@ const Card = styled(motion.div)<{ $isBreaking: boolean; $isCritical: boolean }>`
     if (props.$isBreaking) return '2px solid #d97706';
     return '1px solid rgba(255, 255, 255, 0.2)';
   }};
-  animation: ${props => props.$isCritical ? `${pulse} 2s infinite` : 'none'};
+  ${props => props.$isCritical && css`
+    animation: ${pulse} 2s infinite;
+  `}
 `;
 
 const BreakingBadge = styled.div<{ $isCritical: boolean }>`
@@ -59,7 +61,9 @@ const BreakingBadge = styled.div<{ $isCritical: boolean }>`
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  animation: ${props => props.$isCritical ? `${pulse} 1.5s infinite` : 'none'};
+  ${props => props.$isCritical && css`
+    animation: ${pulse} 1.5s infinite;
+  `}
 `;
 
 const Header = styled.div`
