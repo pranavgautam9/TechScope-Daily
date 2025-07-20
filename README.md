@@ -8,7 +8,7 @@ A modern, AI-powered tech news platform that delivers personalized daily tech in
 - **AI-Generated Content**: Personalized insights and summaries
 - **Unified News Feed**: Latest tech news with breaking news integration
 - **Stock Market Integration**: Real-time stock data and analysis
-- **Tech Facts**: Daily interesting tech facts and trivia
+- **Daily Tech Facts**: Interesting tech facts displayed on the loading screen
 - **Deep Dive Content**: In-depth analysis and trending topics
 
 ## 🏗️ Architecture
@@ -97,7 +97,19 @@ TechScope Daily/
 - `GET /api/news` - Get latest tech news
 - `GET /api/breaking-news` - Get breaking news alerts
 - `GET /api/stocks` - Get stock market data
-- `GET /api/facts` - Get daily tech facts
+- `GET /api/facts/daily` - Get daily tech fact
+
+## 🎯 Key Features
+
+### Navigation
+- **News**: Latest tech news with breaking news integration
+- **Live Stocks**: Real-time stock market data and analysis
+
+### Daily Facts
+- **Loading Screen**: Displays a unique tech fact each day during app startup
+- **5-Second Display**: Extended loading time to allow users to read the fact
+- **Daily Rotation**: New fact generated automatically each day at midnight
+- **AI-Generated**: Facts are generated using AI for variety and relevance
 
 ## 🤝 Contributing
 

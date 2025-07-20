@@ -1,11 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FiFileText, FiZap, FiTrendingUp, FiCalendar, FiAlertTriangle } from 'react-icons/fi';
+import { FiFileText, FiTrendingUp } from 'react-icons/fi';
 
 interface HeaderProps {
-  activeSection: 'news' | 'facts' | 'stocks';
-  setActiveSection: (section: 'news' | 'facts' | 'stocks') => void;
+  activeSection: 'news' | 'stocks';
+  setActiveSection: (section: 'news' | 'stocks') => void;
 }
 
 const HeaderContainer = styled.header`
@@ -66,7 +66,6 @@ const NavTab = styled(motion.button)<{ $active: boolean }>`
 const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
   const tabs = [
     { id: 'news', label: 'News', icon: FiFileText },
-    { id: 'facts', label: 'Tech Facts', icon: FiZap },
     { id: 'stocks', label: 'Live Stocks', icon: FiTrendingUp },
   ] as const;
 

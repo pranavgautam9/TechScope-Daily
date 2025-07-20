@@ -3,7 +3,7 @@ import schedule
 import time
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.models.database import SessionLocal
+from app.models.database import SessionLocal, Fact
 from app.services.breaking_news_service import BreakingNewsService
 from app.ai.content_generator import AIContentGenerator
 from app.models.database import BreakingNews
@@ -12,6 +12,42 @@ class NewsScheduler:
     def __init__(self):
         self.breaking_news_service = BreakingNewsService()
         self.ai_generator = AIContentGenerator()
+    
+    async def generate_daily_fact(self):
+        """Generate a new daily fact"""
+        try:
+            db = SessionLocal()
+            
+            # Check if we already have a fact for today
+            today = datetime.now().date()
+            existing_fact = db.query(Fact).filter(
+                Fact.is_active == True,
+                Fact.created_at >= today
+            ).first()
+            
+            if existing_fact:
+                print(f"[{datetime.now()}] Daily fact already exists for today")
+                return
+            
+            # Generate new fact
+            print(f"[{datetime.now()}] Generating new daily fact...")
+            fact_data = await self.ai_generator.generate_tech_fact("random")
+            
+            new_fact = Fact(
+                fact_text=fact_data["fact_text"],
+                category=fact_data["category"],
+                source=fact_data["source"]
+            )
+            
+            db.add(new_fact)
+            db.commit()
+            
+            print(f"[{datetime.now()}] Generated daily fact: {fact_data['fact_text'][:50]}...")
+            
+        except Exception as e:
+            print(f"Error generating daily fact: {e}")
+        finally:
+            db.close()
     
     async def fetch_and_analyze_breaking_news(self):
         """Fetch breaking news and analyze with AI"""
@@ -81,8 +117,14 @@ class NewsScheduler:
             lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
         )
         
-        # Run initial fetch
+        # Schedule daily fact generation at midnight
+        schedule.every().day.at("00:00").do(
+            lambda: asyncio.run(self.generate_daily_fact())
+        )
+        
+        # Run initial fetches
         asyncio.run(self.fetch_and_analyze_breaking_news())
+        asyncio.run(self.generate_daily_fact())
         
         # Keep the scheduler running
         while True:
