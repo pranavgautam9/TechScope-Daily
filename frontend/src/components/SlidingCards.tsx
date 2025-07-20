@@ -4,11 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiChevronLeft, FiChevronRight, FiPause, FiPlay } from 'react-icons/fi';
 
 import NewsSection from './NewsSection';
-import FactsSection from './FactsSection';
 import StocksSection from './StocksSection';
 
 interface SlidingCardsProps {
-  activeSection: 'news' | 'facts' | 'stocks';
+  activeSection: 'news' | 'stocks';
 }
 
 const CardsContainer = styled.div`
@@ -84,11 +83,6 @@ interface NewsCard {
   content: string;
 }
 
-interface FactCard {
-  id: number;
-  fact: string;
-}
-
 interface StockCard {
   id: number;
   symbol: string;
@@ -96,21 +90,13 @@ interface StockCard {
   change: string;
 }
 
-
-
-
-
 function isNewsCard(card: any): card is NewsCard {
   return 'title' in card && 'content' in card;
 }
-function isFactCard(card: any): card is FactCard {
-  return 'fact' in card;
-}
+
 function isStockCard(card: any): card is StockCard {
   return 'symbol' in card && 'price' in card && 'change' in card;
 }
-
-
 
 const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -172,19 +158,12 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
             source: 'Research News'
           },
         ];
-      case 'facts':
-        return [
-          { id: 1, fact: 'The first computer bug was an actual bug - a moth found in the Harvard Mark II computer in 1947.' },
-          { id: 2, fact: 'The term "algorithm" comes from the name of Persian mathematician Al-Khwarizmi.' },
-          { id: 3, fact: 'The first programming language was FORTRAN, created in 1957 by IBM.' },
-        ];
       case 'stocks':
         return [
           { id: 1, symbol: 'AAPL', price: 150.25, change: '+2.5%' },
           { id: 2, symbol: 'MSFT', price: 320.10, change: '+1.8%' },
           { id: 3, symbol: 'GOOGL', price: 2750.50, change: '-0.5%' },
         ];
-
 
       default:
         return [];
@@ -240,13 +219,9 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
       case 'news':
         if (isNewsCard(card)) return <NewsSection card={card} />;
         break;
-      case 'facts':
-        if (isFactCard(card)) return <FactsSection card={card} />;
-        break;
       case 'stocks':
         if (isStockCard(card)) return <StocksSection card={card} />;
         break;
-
 
       default:
         return null;

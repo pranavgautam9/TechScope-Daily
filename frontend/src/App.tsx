@@ -7,7 +7,6 @@ import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
 import SlidingCards from './components/SlidingCards';
 import NewsSection from './components/NewsSection';
-import FactsSection from './components/FactsSection';
 import StocksSection from './components/StocksSection';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -25,13 +24,13 @@ const MainContent = styled.main`
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<'news' | 'facts' | 'stocks'>('news');
+  const [activeSection, setActiveSection] = useState<'news' | 'stocks'>('news');
 
   useEffect(() => {
-    // Simulate loading time
+    // Simulate loading time - increased to 5 seconds for fact reading
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, []);

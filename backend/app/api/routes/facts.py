@@ -9,6 +9,55 @@ from app.ai.content_generator import AIContentGenerator
 router = APIRouter()
 ai_generator = AIContentGenerator()
 
+@router.get("/daily")
+async def get_daily_fact(db: Session = Depends(get_db)):
+    """Get a single fact for today. If no fact exists for today, generate one."""
+    try:
+        today = datetime.now().date()
+        
+        # Check if we already have a fact for today
+        today_fact = db.query(Fact).filter(
+            Fact.is_active == True,
+            Fact.created_at >= today
+        ).first()
+        
+        if today_fact:
+            return {
+                "success": True,
+                "data": {
+                    "fact_text": today_fact.fact_text,
+                    "category": today_fact.category,
+                    "source": today_fact.source,
+                    "created_at": today_fact.created_at
+                }
+            }
+        
+        # If no fact for today, generate one
+        fact_data = await ai_generator.generate_tech_fact("random")
+        
+        new_fact = Fact(
+            fact_text=fact_data["fact_text"],
+            category=fact_data["category"],
+            source=fact_data["source"]
+        )
+        
+        db.add(new_fact)
+        db.commit()
+        db.refresh(new_fact)
+        
+        return {
+            "success": True,
+            "data": {
+                "fact_text": new_fact.fact_text,
+                "category": new_fact.category,
+                "source": new_fact.source,
+                "created_at": new_fact.created_at
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/")
 async def get_daily_facts(
     limit: int = 5,
