@@ -6,11 +6,9 @@ import { FiChevronLeft, FiChevronRight, FiPause, FiPlay } from 'react-icons/fi';
 import NewsSection from './NewsSection';
 import FactsSection from './FactsSection';
 import StocksSection from './StocksSection';
-import WeeklySection from './WeeklySection';
-import BreakingNewsSection from './BreakingNewsSection';
 
 interface SlidingCardsProps {
-  activeSection: 'news' | 'facts' | 'stocks' | 'weekly' | 'breaking';
+  activeSection: 'news' | 'facts' | 'stocks';
 }
 
 const CardsContainer = styled.div`
@@ -98,24 +96,9 @@ interface StockCard {
   change: string;
 }
 
-interface WeeklyCard {
-  id: number;
-  title: string;
-  content: string;
-  source: string;
-  is_critical: boolean;
-}
 
-interface BreakingNewsCard {
-  id: number;
-  title: string;
-  content: string;
-  source: string;
-  is_critical: boolean;
-  importance_score: number;
-  sentiment: string;
-  impact_level: string;
-}
+
+
 
 function isNewsCard(card: any): card is NewsCard {
   return 'title' in card && 'content' in card;
@@ -126,12 +109,8 @@ function isFactCard(card: any): card is FactCard {
 function isStockCard(card: any): card is StockCard {
   return 'symbol' in card && 'price' in card && 'change' in card;
 }
-function isWeeklyCard(card: any): card is WeeklyCard {
-  return 'title' in card && 'content' in card && 'source' in card && 'is_critical' in card;
-}
-function isBreakingNewsCard(card: any): card is BreakingNewsCard {
-  return 'source' in card && 'importance_score' in card;
-}
+
+
 
 const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -143,9 +122,55 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
     switch (section) {
       case 'news':
         return [
-          { id: 1, title: 'Latest AI Breakthrough', content: 'OpenAI releases GPT-5 with unprecedented capabilities...' },
-          { id: 2, title: 'Tech Giant Merger', content: 'Major tech companies announce strategic partnership...' },
-          { id: 3, title: 'Quantum Computing Milestone', content: 'IBM achieves quantum advantage in real-world applications...' },
+          { 
+            id: 1, 
+            title: 'CRITICAL: Major Cybersecurity Breach Detected', 
+            content: 'A massive cybersecurity breach has been detected affecting millions of users worldwide. Security experts are working around the clock to contain the threat...',
+            is_breaking: true,
+            is_critical: true,
+            importance_score: 0.95,
+            impact_level: 'high',
+            sentiment: 'negative',
+            source: 'Security Alert'
+          },
+          { 
+            id: 2, 
+            title: 'BREAKING: Apple Announces Revolutionary AI Integration', 
+            content: 'Apple has just announced a groundbreaking AI integration that will transform how users interact with their devices. The new system promises unprecedented personalization...',
+            is_breaking: true,
+            is_critical: false,
+            importance_score: 0.85,
+            impact_level: 'high',
+            sentiment: 'positive',
+            source: 'Tech News'
+          },
+          { 
+            id: 3, 
+            title: 'Latest AI Breakthrough', 
+            content: 'OpenAI releases GPT-5 with unprecedented capabilities that could revolutionize the AI industry...',
+            is_breaking: false,
+            is_critical: false,
+            importance_score: 0.75,
+            source: 'AI News'
+          },
+          { 
+            id: 4, 
+            title: 'Tech Giant Merger', 
+            content: 'Major tech companies announce strategic partnership that could reshape the industry landscape...',
+            is_breaking: false,
+            is_critical: false,
+            importance_score: 0.65,
+            source: 'Business News'
+          },
+          { 
+            id: 5, 
+            title: 'Quantum Computing Milestone', 
+            content: 'IBM achieves quantum advantage in real-world applications, marking a significant breakthrough...',
+            is_breaking: false,
+            is_critical: false,
+            importance_score: 0.70,
+            source: 'Research News'
+          },
         ];
       case 'facts':
         return [
@@ -159,45 +184,8 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
           { id: 2, symbol: 'MSFT', price: 320.10, change: '+1.8%' },
           { id: 3, symbol: 'GOOGL', price: 2750.50, change: '-0.5%' },
         ];
-      case 'weekly':
-        return [
-          { id: 1, title: 'Weekly Tech Roundup', content: 'The most important tech news of the week...' },
-          { id: 2, title: 'AI Trends Analysis', content: 'Deep dive into emerging AI technologies...' },
-          { id: 3, title: 'Market Insights', content: 'Tech market performance and predictions...' },
-        ];
-      case 'breaking':
-        return [
-          { 
-            id: 1, 
-            title: 'OpenAI Announces GPT-5 Release', 
-            content: 'OpenAI has just announced the release of GPT-5, their most advanced language model yet, with unprecedented reasoning capabilities and multimodal understanding.',
-            source: 'Google News',
-            is_critical: true,
-            importance_score: 0.95,
-            sentiment: 'positive',
-            impact_level: 'high'
-          },
-          { 
-            id: 2, 
-            title: 'Major Tech Layoffs Announced', 
-            content: 'Several major tech companies have announced significant layoffs affecting thousands of employees across the industry.',
-            source: 'LinkedIn',
-            is_critical: false,
-            importance_score: 0.8,
-            sentiment: 'negative',
-            impact_level: 'high'
-          },
-          { 
-            id: 3, 
-            title: 'Tesla Unveils Revolutionary Battery Technology', 
-            content: 'Tesla has unveiled a new battery technology that promises to double the range of electric vehicles while reducing costs by 50%.',
-            source: 'Google News',
-            is_critical: true,
-            importance_score: 0.9,
-            sentiment: 'positive',
-            impact_level: 'high'
-          },
-        ];
+
+
       default:
         return [];
     }
@@ -258,12 +246,8 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
       case 'stocks':
         if (isStockCard(card)) return <StocksSection card={card} />;
         break;
-      case 'weekly':
-        if (isWeeklyCard(card)) return <WeeklySection card={card} />;
-        break;
-      case 'breaking':
-        if (isBreakingNewsCard(card)) return <BreakingNewsSection card={card} />;
-        break;
+
+
       default:
         return null;
     }
