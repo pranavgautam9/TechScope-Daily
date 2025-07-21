@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/TechScope-Daily/static/css/main.c1dcc635.css",
+    "main.js": "/TechScope-Daily/static/js/main.99cd790d.js",
+    "index.html": "/TechScope-Daily/index.html",
+    "main.c1dcc635.css.map": "/TechScope-Daily/static/css/main.c1dcc635.css.map",
+    "main.99cd790d.js.map": "/TechScope-Daily/static/js/main.99cd790d.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c1dcc635.css",
+    "static/js/main.99cd790d.js"
+  ]
+}
