@@ -58,9 +58,9 @@ TechScope Daily/
 
 2. **Backend Setup**
    ```bash
-   cd backend
    python -m venv venv
    source venv/bin/activate  # On CMD: venv\Scripts\activate
+   cd backend
    pip install -r requirements.txt
    ```
 

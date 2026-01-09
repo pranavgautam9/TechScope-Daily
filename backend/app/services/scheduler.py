@@ -1,7 +1,7 @@
 import asyncio
 import schedule
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.database import SessionLocal, Fact
 from app.services.breaking_news_service import BreakingNewsService
@@ -20,13 +20,17 @@ class NewsScheduler:
             
             # Check if we already have a fact for today
             today = datetime.now().date()
+            tomorrow = today + timedelta(days=1)
+            
             existing_fact = db.query(Fact).filter(
                 Fact.is_active == True,
-                Fact.created_at >= today
+                Fact.created_at >= datetime.combine(today, datetime.min.time()),
+                Fact.created_at < datetime.combine(tomorrow, datetime.min.time())
             ).first()
             
             if existing_fact:
-                print(f"[{datetime.now()}] Daily fact already exists for today")
+                print(f"[{datetime.now()}] Daily fact already exists for today: {existing_fact.fact_text[:50]}...")
+                db.close()
                 return
             
             # Generate new fact
@@ -46,6 +50,8 @@ class NewsScheduler:
             
         except Exception as e:
             print(f"Error generating daily fact: {e}")
+            import traceback
+            traceback.print_exc()
         finally:
             db.close()
     
@@ -54,13 +60,13 @@ class NewsScheduler:
         try:
             db = SessionLocal()
             
-            # Fetch from Google News
+            # Fetch from Google News (filtered for tech/Wired)
             print(f"[{datetime.now()}] Fetching Google News...")
             google_news = await self.breaking_news_service.fetch_google_news(db)
             
-            # Fetch from LinkedIn (simulated)
-            print(f"[{datetime.now()}] Fetching LinkedIn News...")
-            linkedin_news = await self.breaking_news_service.fetch_linkedin_news(db)
+            # Fetch from Wired.com
+            print(f"[{datetime.now()}] Fetching Wired.com News...")
+            wired_news = await self.breaking_news_service.fetch_wired_news(db)
             
             # Analyze importance for new breaking news
             breaking_news = db.query(BreakingNews).filter(
@@ -87,7 +93,7 @@ class NewsScheduler:
                     continue
             
             db.commit()
-            print(f"[{datetime.now()}] Completed breaking news update. Fetched: {len(google_news) + len(linkedin_news)} items")
+            print(f"[{datetime.now()}] Completed breaking news update. Fetched: {len(google_news) + len(wired_news)} items (Google: {len(google_news)}, Wired: {len(wired_news)})")
             
         except Exception as e:
             print(f"Error in scheduled breaking news fetch: {e}")
@@ -98,33 +104,34 @@ class NewsScheduler:
         """Start the news scheduler"""
         print("Starting Breaking News Scheduler...")
         
-        # Schedule breaking news fetch every 30 minutes
-        schedule.every(30).minutes.do(
-            lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
-        )
-        
-        # Schedule breaking news fetch every 15 minutes during business hours
-        schedule.every().day.at("09:00").do(
-            lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
-        )
-        schedule.every().day.at("12:00").do(
-            lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
-        )
-        schedule.every().day.at("15:00").do(
-            lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
-        )
-        schedule.every().day.at("18:00").do(
-            lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
-        )
-        
-        # Schedule daily fact generation at midnight
+        # Schedule daily fact generation at midnight (00:00)
         schedule.every().day.at("00:00").do(
             lambda: asyncio.run(self.generate_daily_fact())
         )
         
-        # Run initial fetches
-        asyncio.run(self.fetch_and_analyze_breaking_news())
+        # Schedule daily news fetch at 6:00 AM (after fact generation)
+        schedule.every().day.at("06:00").do(
+            lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
+        )
+        
+        # Also fetch news at noon for updates
+        schedule.every().day.at("12:00").do(
+            lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
+        )
+        
+        # Schedule breaking news fetch every 2 hours during the day
+        schedule.every(2).hours.do(
+            lambda: asyncio.run(self.fetch_and_analyze_breaking_news())
+        )
+        
+        # Run initial fetches on startup
+        print(f"[{datetime.now()}] Running initial fact generation...")
         asyncio.run(self.generate_daily_fact())
+        
+        print(f"[{datetime.now()}] Running initial news fetch...")
+        asyncio.run(self.fetch_and_analyze_breaking_news())
+        
+        print(f"[{datetime.now()}] Scheduler started. Next fact generation at 00:00, next news fetch at 06:00")
         
         # Keep the scheduler running
         while True:

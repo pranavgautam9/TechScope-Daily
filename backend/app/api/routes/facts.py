@@ -14,12 +14,14 @@ async def get_daily_fact(db: Session = Depends(get_db)):
     """Get a single fact for today. If no fact exists for today, generate one."""
     try:
         today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
         
-        # Check if we already have a fact for today
+        # Check if we already have a fact for today (created today, before tomorrow)
         today_fact = db.query(Fact).filter(
             Fact.is_active == True,
-            Fact.created_at >= today
-        ).first()
+            Fact.created_at >= datetime.combine(today, datetime.min.time()),
+            Fact.created_at < datetime.combine(tomorrow, datetime.min.time())
+        ).order_by(Fact.created_at.desc()).first()
         
         if today_fact:
             return {

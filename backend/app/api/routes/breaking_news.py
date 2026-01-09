@@ -57,14 +57,14 @@ async def fetch_google_news(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/fetch-linkedin-news")
-async def fetch_linkedin_news(db: Session = Depends(get_db)):
-    """Fetch breaking news from LinkedIn"""
+@router.post("/fetch-wired-news")
+async def fetch_wired_news(db: Session = Depends(get_db)):
+    """Fetch breaking news from Wired.com"""
     try:
-        news_items = await breaking_news_service.fetch_linkedin_news(db)
+        news_items = await breaking_news_service.fetch_wired_news(db)
         return {
             "success": True,
-            "message": f"Fetched {len(news_items)} breaking news items",
+            "message": f"Fetched {len(news_items)} breaking news items from Wired.com",
             "data": news_items
         }
     except Exception as e:

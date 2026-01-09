@@ -21,12 +21,17 @@ const HeaderContainer = styled.header`
 `;
 
 const HeaderContent = styled.div`
-  max-width: 1200px;
+  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
+  @media (max-width: 768px) {
+    padding: 0 10px;
+  }
 `;
 
 const Logo = styled.div`
@@ -36,12 +41,15 @@ const Logo = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
 `;
 
 const Navigation = styled.nav`
   display: flex;
   gap: 1rem;
+  flex-shrink: 0;
 `;
+
 
 const NavTab = styled(motion.button)<{ $active: boolean }>`
   display: flex;

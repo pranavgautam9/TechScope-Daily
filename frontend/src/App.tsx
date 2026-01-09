@@ -13,13 +13,15 @@ import LoadingSpinner from './components/LoadingSpinner';
 const AppContainer = styled.div`
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 10px;
 `;
 
 const MainContent = styled.main`
-  max-width: 1200px;
+  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   padding-top: 80px;
+  padding-bottom: 20px;
 `;
 
 const App: React.FC = () => {

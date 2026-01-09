@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiChevronLeft, FiChevronRight, FiPause, FiPlay } from 'react-icons/fi';
+import axios from 'axios';
 
 import NewsSection from './NewsSection';
 import StocksSection from './StocksSection';
@@ -10,15 +11,41 @@ interface SlidingCardsProps {
   activeSection: 'news' | 'stocks';
 }
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+// Helper function to strip HTML tags from content
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  // Create a temporary div element
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  // Get text content and clean it up
+  let text = tmp.textContent || tmp.innerText || '';
+  // Remove extra whitespace and newlines
+  text = text.replace(/\s+/g, ' ').trim();
+  // Remove HTML entities
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  return text;
+};
+
 const CardsContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 600px;
+  height: calc(100vh - 140px);
+  min-height: 600px;
   overflow: hidden;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const CardWrapper = styled(motion.div)`
@@ -30,6 +57,8 @@ const CardWrapper = styled(motion.div)`
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
 `;
 
 const NavigationControls = styled.div`
@@ -77,6 +106,21 @@ const Progress = styled(motion.div)`
   border-radius: 2px;
 `;
 
+const Card = styled(motion.div)`
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2.5rem;
+  width: 95%;
+  max-width: 95%;
+  height: calc(100% - 80px);
+  max-height: calc(100vh - 220px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+`;
+
 interface NewsCard {
   id: number;
   title: string;
@@ -102,75 +146,131 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [newsCards, setNewsCards] = useState<any[]>([]);
+  const [stockCards, setStockCards] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data for demonstration
-  const getCardsForSection = (section: string) => {
-    switch (section) {
-      case 'news':
-        return [
-          { 
-            id: 1, 
-            title: 'CRITICAL: Major Cybersecurity Breach Detected', 
-            content: 'A massive cybersecurity breach has been detected affecting millions of users worldwide. Security experts are working around the clock to contain the threat...',
+  // Fetch news from backend
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch breaking news first (most important)
+        const breakingResponse = await axios.get(`${API_BASE_URL}/api/breaking-news/trending`);
+        const breakingNews = breakingResponse.data.data || [];
+        
+        // Fetch regular news
+        const newsResponse = await axios.get(`${API_BASE_URL}/api/news/latest`);
+        const regularNews = newsResponse.data.data || [];
+        
+        // Combine and format news
+        const formattedNews = [
+          ...breakingNews.map((item: any) => ({
+            id: item.id,
+            title: stripHtml(item.title || ''),
+            content: stripHtml(item.content || item.title || ''),
+            source: item.source || 'Tech News',
             is_breaking: true,
-            is_critical: true,
-            importance_score: 0.95,
-            impact_level: 'high',
-            sentiment: 'negative',
-            source: 'Security Alert'
-          },
-          { 
-            id: 2, 
-            title: 'BREAKING: Apple Announces Revolutionary AI Integration', 
-            content: 'Apple has just announced a groundbreaking AI integration that will transform how users interact with their devices. The new system promises unprecedented personalization...',
-            is_breaking: true,
-            is_critical: false,
-            importance_score: 0.85,
-            impact_level: 'high',
-            sentiment: 'positive',
-            source: 'Tech News'
-          },
-          { 
-            id: 3, 
-            title: 'Latest AI Breakthrough', 
-            content: 'OpenAI releases GPT-5 with unprecedented capabilities that could revolutionize the AI industry...',
+            is_critical: item.is_critical || false,
+            importance_score: item.importance_score || 0.7,
+            impact_level: item.impact_level || 'medium',
+            sentiment: item.sentiment || 'neutral',
+            url: item.url
+          })),
+          ...regularNews.map((item: any) => ({
+            id: item.id,
+            title: stripHtml(item.title || ''),
+            content: stripHtml(item.content || item.title || ''),
+            source: item.source || 'Tech News',
             is_breaking: false,
             is_critical: false,
-            importance_score: 0.75,
-            source: 'AI News'
-          },
-          { 
-            id: 4, 
-            title: 'Tech Giant Merger', 
-            content: 'Major tech companies announce strategic partnership that could reshape the industry landscape...',
-            is_breaking: false,
-            is_critical: false,
-            importance_score: 0.65,
-            source: 'Business News'
-          },
-          { 
-            id: 5, 
-            title: 'Quantum Computing Milestone', 
-            content: 'IBM achieves quantum advantage in real-world applications, marking a significant breakthrough...',
-            is_breaking: false,
-            is_critical: false,
-            importance_score: 0.70,
-            source: 'Research News'
-          },
+            importance_score: item.importance_score || 0.5,
+            impact_level: 'medium',
+            sentiment: 'neutral',
+            url: item.url
+          }))
         ];
-      case 'stocks':
-        return [
-          { id: 1, symbol: 'AAPL', price: 150.25, change: '+2.5%' },
-          { id: 2, symbol: 'MSFT', price: 320.10, change: '+1.8%' },
-          { id: 3, symbol: 'GOOGL', price: 2750.50, change: '-0.5%' },
-        ];
+        
+        // If no news from API, use fallback
+        if (formattedNews.length === 0) {
+          formattedNews.push({
+            id: 1,
+            title: 'Welcome to TechScope Daily',
+            content: 'Fetching the latest tech news for you...',
+            source: 'TechScope Daily',
+            is_breaking: false,
+            is_critical: false,
+            importance_score: 0.5
+          });
+        }
+        
+        setNewsCards(formattedNews);
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        // Fallback news
+        setNewsCards([{
+          id: 1,
+          title: 'Welcome to TechScope Daily',
+          content: 'Unable to fetch news. Please check your connection.',
+          source: 'TechScope Daily',
+          is_breaking: false,
+          is_critical: false,
+          importance_score: 0.5
+        }]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      default:
-        return [];
+    if (activeSection === 'news') {
+      fetchNews();
     }
-  };
+  }, [activeSection]);
 
-  const cards = getCardsForSection(activeSection);
+  // Fetch stocks from backend
+  useEffect(() => {
+    const fetchStocks = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/stocks/live`);
+        const stocks = response.data.data || [];
+        
+        const formattedStocks = stocks.map((stock: any) => ({
+          id: stock.symbol,
+          symbol: stock.symbol,
+          price: stock.current_price || 0,
+          change: `${stock.change_percent >= 0 ? '+' : ''}${stock.change_percent?.toFixed(2) || 0}%`,
+          company_name: stock.company_name
+        }));
+        
+        if (formattedStocks.length === 0) {
+          formattedStocks.push({
+            id: 'AAPL',
+            symbol: 'AAPL',
+            price: 0,
+            change: '+0%',
+            company_name: 'Loading...'
+          });
+        }
+        
+        setStockCards(formattedStocks);
+      } catch (error) {
+        console.error('Error fetching stocks:', error);
+        setStockCards([{
+          id: 'AAPL',
+          symbol: 'AAPL',
+          price: 0,
+          change: '+0%',
+          company_name: 'Unable to load'
+        }]);
+      }
+    };
+
+    if (activeSection === 'stocks') {
+      fetchStocks();
+    }
+  }, [activeSection]);
+
+  const cards = activeSection === 'news' ? newsCards : stockCards;
   const totalCards = cards.length;
 
   const nextCard = useCallback(() => {
@@ -209,11 +309,48 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
   useEffect(() => {
     setCurrentCardIndex(0);
     setProgress(0);
-  }, [activeSection]);
+  }, [activeSection, cards]);
 
   const renderCard = () => {
+    if (isLoading) {
+      return (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '2rem',
+          color: 'white',
+          fontSize: '1.2rem'
+        }}>
+          <p>Loading {activeSection}...</p>
+        </div>
+      );
+    }
+
+    if (cards.length === 0) {
+      return (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '2rem',
+          color: 'white',
+          fontSize: '1.2rem'
+        }}>
+          <p>No {activeSection} available at the moment.</p>
+        </div>
+      );
+    }
+
     const card = cards[currentCardIndex];
-    if (!card) return null;
+    if (!card) {
+      return (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '2rem',
+          color: 'white',
+          fontSize: '1.2rem'
+        }}>
+          <p>No card data available.</p>
+        </div>
+      );
+    }
 
     switch (activeSection) {
       case 'news':
@@ -226,6 +363,8 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
       default:
         return null;
     }
+    
+    return null;
   };
 
   return (

@@ -17,11 +17,18 @@ interface StocksSectionProps {
 const Card = styled(motion.div)`
   background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
-  padding: 2rem;
-  max-width: 800px;
-  width: 90%;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  min-height: 400px;
+  max-height: calc(100vh - 200px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
 `;
 
 const Header = styled.div`
