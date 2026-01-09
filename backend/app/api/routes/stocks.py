@@ -50,6 +50,42 @@ async def get_all_stocks(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/daily")
+async def get_daily_stocks(db: Session = Depends(get_db)):
+    """Get daily stocks for the feed"""
+    try:
+        # Get all stocks, ordered by market cap (largest first) or by symbol
+        stocks = db.query(Stock).order_by(Stock.market_cap.desc().nullslast(), Stock.symbol).all()
+        
+        if not stocks or len(stocks) == 0:
+            # If no stocks in DB, return empty array
+            return {
+                "success": True,
+                "data": [],
+                "message": "No stocks available. Stocks will be updated daily at 9:00 AM."
+            }
+        
+        return {
+            "success": True,
+            "data": [
+                {
+                    "id": stock.id,
+                    "symbol": stock.symbol,
+                    "company_name": stock.company_name,
+                    "current_price": stock.current_price or 0,
+                    "change": stock.change or 0,
+                    "change_percent": stock.change_percent or 0,
+                    "volume": stock.volume or 0,
+                    "market_cap": stock.market_cap or 0,
+                    "updated_at": stock.updated_at
+                }
+                for stock in stocks
+            ],
+            "count": len(stocks)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/live")
 async def get_live_stocks(db: Session = Depends(get_db)):
     """Get live stock data (fetch from API and update database)"""

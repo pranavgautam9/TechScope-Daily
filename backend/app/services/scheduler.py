@@ -5,12 +5,14 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.database import SessionLocal, Fact
 from app.services.breaking_news_service import BreakingNewsService
+from app.services.stock_service import StockService
 from app.ai.content_generator import AIContentGenerator
 from app.models.database import BreakingNews
 
 class NewsScheduler:
     def __init__(self):
         self.breaking_news_service = BreakingNewsService()
+        self.stock_service = StockService()
         self.ai_generator = AIContentGenerator()
     
     async def generate_daily_fact(self):
@@ -100,6 +102,24 @@ class NewsScheduler:
         finally:
             db.close()
     
+    async def update_daily_stocks(self):
+        """Update stock data daily"""
+        try:
+            db = SessionLocal()
+            
+            print(f"[{datetime.now()}] Updating daily stock data...")
+            updated_stocks = self.stock_service.update_stock_data(db)
+            
+            db.commit()
+            print(f"[{datetime.now()}] Updated {len(updated_stocks)} stocks")
+            
+        except Exception as e:
+            print(f"Error updating stocks: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            db.close()
+    
     def start_scheduler(self):
         """Start the news scheduler"""
         print("Starting Breaking News Scheduler...")
@@ -107,6 +127,11 @@ class NewsScheduler:
         # Schedule daily fact generation at midnight (00:00)
         schedule.every().day.at("00:00").do(
             lambda: asyncio.run(self.generate_daily_fact())
+        )
+        
+        # Schedule daily stock update at 9:00 AM (market open time)
+        schedule.every().day.at("09:00").do(
+            lambda: asyncio.run(self.update_daily_stocks())
         )
         
         # Schedule daily news fetch at 6:00 AM (after fact generation)
@@ -131,7 +156,10 @@ class NewsScheduler:
         print(f"[{datetime.now()}] Running initial news fetch...")
         asyncio.run(self.fetch_and_analyze_breaking_news())
         
-        print(f"[{datetime.now()}] Scheduler started. Next fact generation at 00:00, next news fetch at 06:00")
+        print(f"[{datetime.now()}] Running initial stock update...")
+        asyncio.run(self.update_daily_stocks())
+        
+        print(f"[{datetime.now()}] Scheduler started. Next fact generation at 00:00, next news fetch at 06:00, next stock update at 09:00")
         
         # Keep the scheduler running
         while True:

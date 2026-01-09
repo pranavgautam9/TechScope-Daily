@@ -128,10 +128,14 @@ interface NewsCard {
 }
 
 interface StockCard {
-  id: number;
+  id: number | string;
   symbol: string;
   price: number;
-  change: string;
+  change: number;
+  change_percent: number;
+  company_name?: string;
+  volume?: number;
+  market_cap?: number;
 }
 
 function isNewsCard(card: any): card is NewsCard {
@@ -231,24 +235,31 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/stocks/live`);
+        setIsLoading(true);
+        const response = await axios.get(`${API_BASE_URL}/api/stocks/daily`);
         const stocks = response.data.data || [];
         
         const formattedStocks = stocks.map((stock: any) => ({
-          id: stock.symbol,
+          id: stock.id || stock.symbol,
           symbol: stock.symbol,
           price: stock.current_price || 0,
-          change: `${stock.change_percent >= 0 ? '+' : ''}${stock.change_percent?.toFixed(2) || 0}%`,
-          company_name: stock.company_name
+          change: stock.change || 0,
+          change_percent: stock.change_percent || 0,
+          company_name: stock.company_name,
+          volume: stock.volume || 0,
+          market_cap: stock.market_cap || 0
         }));
         
         if (formattedStocks.length === 0) {
           formattedStocks.push({
-            id: 'AAPL',
-            symbol: 'AAPL',
+            id: 'placeholder',
+            symbol: 'N/A',
             price: 0,
-            change: '+0%',
-            company_name: 'Loading...'
+            change: 0,
+            change_percent: 0,
+            company_name: 'No stocks available',
+            volume: 0,
+            market_cap: 0
           });
         }
         
@@ -256,12 +267,17 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
       } catch (error) {
         console.error('Error fetching stocks:', error);
         setStockCards([{
-          id: 'AAPL',
-          symbol: 'AAPL',
+          id: 'error',
+          symbol: 'ERROR',
           price: 0,
-          change: '+0%',
-          company_name: 'Unable to load'
+          change: 0,
+          change_percent: 0,
+          company_name: 'Unable to load stocks',
+          volume: 0,
+          market_cap: 0
         }]);
+      } finally {
+        setIsLoading(false);
       }
     };
 

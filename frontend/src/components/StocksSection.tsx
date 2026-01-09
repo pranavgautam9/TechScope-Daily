@@ -4,10 +4,14 @@ import { motion } from 'framer-motion';
 import { FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
 
 interface StockCard {
-  id: number;
+  id: number | string;
   symbol: string;
   price: number;
-  change: string;
+  change: number;
+  change_percent: number;
+  company_name?: string;
+  volume?: number;
+  market_cap?: number;
 }
 
 interface StocksSectionProps {
@@ -15,7 +19,7 @@ interface StocksSectionProps {
 }
 
 const Card = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 235, 255, 0.95) 100%);
   border-radius: 20px;
   padding: 2.5rem;
   width: 100%;
@@ -23,8 +27,9 @@ const Card = styled(motion.div)`
   height: auto;
   min-height: 400px;
   max-height: calc(100vh - 200px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(102, 126, 234, 0.2);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -66,18 +71,6 @@ const Change = styled.div<{ $isPositive: boolean }>`
   gap: 0.5rem;
 `;
 
-const ChartPlaceholder = styled.div`
-  height: 200px;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b7280;
-  font-size: 1.1rem;
-  margin: 1.5rem 0;
-`;
-
 const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -86,10 +79,12 @@ const StatsGrid = styled.div`
 `;
 
 const StatItem = styled.div`
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
   padding: 1rem;
   border-radius: 12px;
   text-align: center;
+  border: 1px solid rgba(102, 126, 234, 0.1);
 `;
 
 const StatLabel = styled.div`
@@ -105,8 +100,27 @@ const StatValue = styled.div`
 `;
 
 const StocksSection: React.FC<StocksSectionProps> = ({ card }) => {
-  const isPositive = card.change.startsWith('+');
-  const changeValue = parseFloat(card.change.replace(/[+\-%]/g, ''));
+  const isPositive = card.change_percent >= 0;
+  const changePercent = card.change_percent || 0;
+  const price = card.price || 0;
+  const volume = card.volume || 0;
+  const marketCap = card.market_cap || 0;
+  
+  // Format large numbers
+  const formatNumber = (num: number): string => {
+    if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
+    return `$${num.toFixed(2)}`;
+  };
+  
+  const formatVolume = (vol: number): string => {
+    if (vol >= 1e9) return `${(vol / 1e9).toFixed(2)}B`;
+    if (vol >= 1e6) return `${(vol / 1e6).toFixed(2)}M`;
+    if (vol >= 1e3) return `${(vol / 1e3).toFixed(2)}K`;
+    return vol.toString();
+  };
 
   return (
     <Card
@@ -115,38 +129,45 @@ const StocksSection: React.FC<StocksSectionProps> = ({ card }) => {
       transition={{ duration: 0.5 }}
     >
       <Header>
-        <Symbol>{card.symbol}</Symbol>
+        <div>
+          <Symbol>{card.symbol}</Symbol>
+          {card.company_name && (
+            <div style={{ fontSize: '1rem', color: '#666', marginTop: '0.5rem' }}>
+              {card.company_name}
+            </div>
+          )}
+        </div>
         <PriceContainer>
           <Price>
-            {card.price.toFixed(2)}
+            ${price.toFixed(2)}
           </Price>
           <Change $isPositive={isPositive}>
             {isPositive ? <FiTrendingUp size={20} /> : <FiTrendingDown size={20} />}
-            {card.change}
+            {isPositive ? '+' : ''}{changePercent.toFixed(2)}%
           </Change>
         </PriceContainer>
       </Header>
 
-      <ChartPlaceholder>
-        Live Chart Data
-      </ChartPlaceholder>
-
       <StatsGrid>
         <StatItem>
+          <StatLabel>Change</StatLabel>
+          <StatValue style={{ color: isPositive ? '#10b981' : '#ef4444' }}>
+            {isPositive ? '+' : ''}${card.change?.toFixed(2) || '0.00'}
+          </StatValue>
+        </StatItem>
+        <StatItem>
           <StatLabel>Volume</StatLabel>
-          <StatValue>2.5M</StatValue>
+          <StatValue>{formatVolume(volume)}</StatValue>
         </StatItem>
         <StatItem>
           <StatLabel>Market Cap</StatLabel>
-          <StatValue>$2.5T</StatValue>
+          <StatValue>{marketCap > 0 ? formatNumber(marketCap) : 'N/A'}</StatValue>
         </StatItem>
         <StatItem>
-          <StatLabel>52W High</StatLabel>
-          <StatValue>$182.94</StatValue>
-        </StatItem>
-        <StatItem>
-          <StatLabel>52W Low</StatLabel>
-          <StatValue>$124.17</StatValue>
+          <StatLabel>Change %</StatLabel>
+          <StatValue style={{ color: isPositive ? '#10b981' : '#ef4444' }}>
+            {isPositive ? '+' : ''}{changePercent.toFixed(2)}%
+          </StatValue>
         </StatItem>
       </StatsGrid>
     </Card>
