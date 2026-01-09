@@ -15,22 +15,6 @@
 
 ---
 
-## 📋 Table of Contents
-
-- [Overview](#-overview)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Configuration](#-configuration)
-- [API Documentation](#-api-documentation)
-- [Daily Updates](#-daily-updates)
-- [Development](#-development)
-- [Contributing](#-contributing)
-- [License](#-license)
-
----
-
 ## 🎯 Overview
 
 **TechScope Daily** is a modern, AI-powered tech news platform that delivers personalized daily tech insights, breaking news, market updates, and fascinating tech facts. Built with FastAPI and React, it provides a beautiful, responsive interface for staying up-to-date with the tech world.
@@ -47,7 +31,26 @@
 
 ## ✨ Features
 
+### 🧠 Daily Facts
+
+<div align="center">
+  <img src="images/loading-screen.png" alt="Loading Screen with Daily Fact" width="800"/>
+  <p><em>Loading screen displaying daily tech fact</em></p>
+</div>
+
+- **AI-Generated Facts**: Unique tech facts generated daily
+- **Loading Screen Display**: Facts shown during app startup
+- **Daily Rotation**: New fact every day at midnight
+- **Free AI Integration**: Uses Hugging Face API (no API key required)
+- **Fallback Database**: 30+ facts per category for reliability
+
 ### 📰 News Section
+
+<div align="center">
+  <img src="images/news-section.png" alt="News Section" width="800"/>
+  <p><em>News feed with article cards and impact scoring</em></p>
+</div>
+
 - **Daily Tech News**: Curated news from Google News and Wired.com
 - **Breaking News Alerts**: Real-time breaking news with importance scoring
 - **AI Analysis**: Automatic sentiment and impact analysis
@@ -55,25 +58,55 @@
 - **Source Filtering**: Focused on quality tech sources
 
 ### 📈 Stocks Section
+
+<div align="center">
+  <img src="images/stocks-section.png" alt="Stocks Section" width="800"/>
+  <p><em>Stock tracking with real-time data and metrics</em></p>
+</div>
+
 - **Major Tech Stocks**: Track 10 major tech companies (AAPL, MSFT, GOOGL, AMZN, TSLA, META, NVDA, NFLX, ADBE, CRM)
 - **Daily Updates**: Stock data refreshed daily at market open
 - **Real-time Metrics**: Price, change, volume, and market cap
 - **Visual Indicators**: Color-coded gains/losses
 - **Formatted Data**: Easy-to-read number formatting (B, M, K)
 
-### 🧠 Daily Facts
-- **AI-Generated Facts**: Unique tech facts generated daily
-- **Loading Screen Display**: Facts shown during app startup
-- **Daily Rotation**: New fact every day at midnight
-- **Free AI Integration**: Uses Hugging Face API (no API key required)
-- **Fallback Database**: 30+ facts per category for reliability
+---
 
-### 🎨 User Interface
-- **Glassmorphism Design**: Modern frosted glass aesthetic
-- **Purple Gradient Theme**: Beautiful purple-to-pink gradient background
-- **Smooth Animations**: Framer Motion powered transitions
-- **Responsive Layout**: Works on desktop, tablet, and mobile
-- **Auto-Play Cards**: Automatic card rotation with manual controls
+## 🚀 Upcoming Features
+
+We're constantly working to improve TechScope Daily! Here's what's coming next:
+
+### 👤 User Authentication & Accounts
+
+- **Individual User Accounts**: Each user will be able to create their own account and login separately
+- **Secure Authentication**: JWT-based authentication system for secure user sessions
+- **Profile Management**: Users can customize their profiles, preferences, and settings
+- **Account Settings**: Full account management including password changes, email updates, and profile customization
+
+### 📰 Personalized News Feed
+
+- **Custom News Preferences**: Users will be able to choose what types of news they want to focus on
+- **Topic Selection**: Select from categories like:
+  - Artificial Intelligence & Machine Learning
+  - Cybersecurity
+  - Startups & Funding
+  - Cloud Computing
+  - Mobile Technology
+  - Gaming & Entertainment Tech
+  - And more...
+- **Priority Viewing**: Your selected topics will appear first in your personalized feed
+- **News Filtering**: Filter news by category, source, date range, and importance
+- **Saved Articles**: Bookmark articles for later reading
+- **Reading History**: Track articles you've read
+
+### 📈 Custom Stock Tracking
+
+- **Personal Stock Watchlist**: Users can pick their favorite stocks and add them to a personal watchlist
+- **Custom Stock Selection**: Choose from any stock symbol, not just the default tech companies
+- **Portfolio Tracking**: Track multiple stocks in your personalized portfolio
+- **Stock Alerts**: Set up price alerts for your tracked stocks
+- **Performance Analytics**: View detailed analytics for your selected stocks
+- **Comparison Tools**: Compare performance across your selected stocks
 
 ---
 
@@ -246,201 +279,6 @@ The frontend will be available at: **http://localhost:3000**
 
 ---
 
-## ⚙️ Configuration
-
-### Daily Scheduler
-
-The application automatically runs background tasks:
-
-- **00:00** - Generate new daily fact
-- **06:00** - Fetch news from Google News & Wired.com
-- **09:00** - Update stock data (market open)
-- **12:00** - Fetch news updates
-- **Every 2 hours** - Fetch breaking news during the day
-
-### News Sources
-
-Currently configured to fetch from:
-- **Google News RSS** (tech news, filtered for Wired.com)
-- **Wired.com RSS** (direct feed)
-
-### Tracked Stocks
-
-The following tech companies are tracked:
-- Apple (AAPL)
-- Microsoft (MSFT)
-- Alphabet/Google (GOOGL)
-- Amazon (AMZN)
-- Tesla (TSLA)
-- Meta (META)
-- NVIDIA (NVDA)
-- Netflix (NFLX)
-- Adobe (ADBE)
-- Salesforce (CRM)
-
----
-
-## 📡 API Documentation
-
-### News Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/news` | GET | Get daily tech news |
-| `/api/news/latest` | GET | Get most recent news items |
-| `/api/news/important` | GET | Get important news for weekly section |
-| `/api/breaking-news` | GET | Get breaking news items |
-| `/api/breaking-news/trending` | GET | Get trending breaking news |
-| `/api/breaking-news/critical` | GET | Get critical breaking news |
-| `/api/breaking-news/fetch-google-news` | POST | Manually fetch Google News |
-| `/api/breaking-news/fetch-wired-news` | POST | Manually fetch Wired.com news |
-
-### Stocks Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/stocks` | GET | Get all tracked stocks |
-| `/api/stocks/daily` | GET | Get daily stocks for feed |
-| `/api/stocks/live` | GET | Fetch live stock data and update DB |
-| `/api/stocks/{symbol}` | GET | Get specific stock by symbol |
-| `/api/stocks/top-gainers` | GET | Get top gaining stocks |
-| `/api/stocks/top-losers` | GET | Get top losing stocks |
-| `/api/stocks/market-summary` | GET | Get market summary statistics |
-
-### Facts Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/facts/daily` | GET | Get today's daily fact |
-| `/api/facts` | GET | Get multiple facts |
-| `/api/facts/generate` | POST | Generate a new fact |
-| `/api/facts/random` | GET | Get a random fact |
-
----
-
-## 🔄 Daily Updates
-
-### How It Works
-
-1. **Daily Facts**: Generated at midnight using free Hugging Face AI or fallback database
-2. **News Updates**: Fetched from Google News and Wired.com at 6 AM and throughout the day
-3. **Stock Updates**: Refreshed daily at 9 AM (market open) using Yahoo Finance
-4. **Automatic Analysis**: News is analyzed for importance, sentiment, and impact
-
-### Data Storage
-
-- All data is stored in SQLite database (`techscope_daily.db`)
-- News articles are deduplicated by URL
-- Stocks are updated in-place
-- Facts are stored with daily rotation
-
----
-
-## 🛠️ Development
-
-### Backend Development
-
-```bash
-cd backend
-
-# Run with auto-reload
-uvicorn main:app --reload
-
-# Run on custom port
-uvicorn main:app --reload --port 8001
-```
-
-### Frontend Development
-
-```bash
-cd frontend
-
-# Start development server
-npm start
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
-```
-
-### Database Management
-
-The database is automatically created and managed by SQLAlchemy. Tables are created on first run.
-
-To reset the database:
-```bash
-# Delete the database file
-rm backend/techscope_daily.db
-
-# Restart the server (tables will be recreated)
-```
-
----
-
-## 🎨 Customization
-
-### Change News Sources
-
-Edit `backend/app/services/breaking_news_service.py`:
-- Modify `fetch_google_news()` for Google News queries
-- Modify `fetch_wired_news()` for Wired.com feed
-
-### Add/Remove Stocks
-
-Edit `backend/app/services/stock_service.py`:
-- Update the `tech_companies` list in `__init__()`
-
-### Customize AI Prompts
-
-Edit `backend/app/ai/content_generator.py`:
-- Modify `generate_tech_fact()` for fact generation
-- Modify analysis functions for news scoring
-
-### Styling
-
-Edit `frontend/src/index.css` for global styles or individual component files for specific styling.
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Port Already in Use**
-```bash
-# Windows
-netstat -ano | findstr :8000
-taskkill /PID <PID> /F
-
-# macOS/Linux
-lsof -ti:8000 | xargs kill -9
-```
-
-**Module Not Found**
-```bash
-# Reinstall backend dependencies
-cd backend
-pip install -r requirements.txt
-
-# Reinstall frontend dependencies
-cd frontend
-npm install
-```
-
-**Database Errors**
-- Ensure SQLite is installed
-- Check file permissions for `techscope_daily.db`
-- Delete database file to reset (data will be regenerated)
-
-**API Connection Issues**
-- Verify backend is running on port 8000
-- Check CORS settings in `backend/main.py`
-- Ensure frontend proxy is set correctly in `package.json`
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these steps:
@@ -473,24 +311,3 @@ Contributions are welcome! Please follow these steps:
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **Google News** - For RSS feed access
-- **Wired.com** - For quality tech journalism
-- **Hugging Face** - For free AI inference API
-- **Yahoo Finance** - For stock market data via yfinance
-- **FastAPI** - For the amazing Python framework
-- **React** - For the powerful UI library
-
----
-
-<div align="center">
-
-**Made with ❤️ for tech enthusiasts**
-
-[Report Bug](https://github.com/yourusername/techscope-daily/issues) · [Request Feature](https://github.com/yourusername/techscope-daily/issues) · [Documentation](setup.md)
-
-</div>
