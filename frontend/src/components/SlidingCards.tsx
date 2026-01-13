@@ -105,9 +105,6 @@ const Progress = styled(motion.div)`
   background: linear-gradient(90deg, #667eea, #764ba2);
   border-radius: 2px;
 `;
-  flex-direction: column;
-  overflow-y: auto;
-`;
 
 interface NewsCard {
   id: number;
