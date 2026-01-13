@@ -25,15 +25,16 @@ class Settings(BaseSettings):
     
     # CORS - Can be set via environment variable as comma-separated string
     # Example: BACKEND_CORS_ORIGINS=http://localhost:3000,https://username.github.io
-    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    BACKEND_CORS_ORIGINS: Optional[str] = None
     
     def get_cors_origins(self):
         """Parse CORS origins from environment variable or use default list"""
-        cors_env = os.getenv("BACKEND_CORS_ORIGINS")
+        cors_env = os.getenv("BACKEND_CORS_ORIGINS") or self.BACKEND_CORS_ORIGINS
         if cors_env:
             # Split by comma and strip whitespace
             return [origin.strip() for origin in cors_env.split(",")]
-        return self.BACKEND_CORS_ORIGINS
+        # Default origins if not set
+        return ["http://localhost:3000", "http://127.0.0.1:3000"]
     
     # Security
     SECRET_KEY: str = "your-secret-key-here"
