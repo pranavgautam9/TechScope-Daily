@@ -105,18 +105,6 @@ const Progress = styled(motion.div)`
   background: linear-gradient(90deg, #667eea, #764ba2);
   border-radius: 2px;
 `;
-
-const Card = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  padding: 2.5rem;
-  width: 95%;
-  max-width: 95%;
-  height: calc(100% - 80px);
-  max-height: calc(100vh - 220px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  display: flex;
   flex-direction: column;
   overflow-y: auto;
 `;

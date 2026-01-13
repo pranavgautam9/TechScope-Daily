@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 
 import Header from './components/Header';
 import SlidingCards from './components/SlidingCards';
-import NewsSection from './components/NewsSection';
-import StocksSection from './components/StocksSection';
 import LoadingSpinner from './components/LoadingSpinner';
 
 const AppContainer = styled.div`
