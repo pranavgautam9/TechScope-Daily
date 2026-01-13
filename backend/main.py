@@ -25,9 +25,11 @@ app = FastAPI(
 )
 
 # CORS middleware for frontend communication
+# Supports GitHub Pages and other domains via BACKEND_CORS_ORIGINS environment variable
+cors_origins = settings.get_cors_origins()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

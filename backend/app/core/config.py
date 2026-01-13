@@ -23,8 +23,17 @@ class Settings(BaseSettings):
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
     
-    # CORS
+    # CORS - Can be set via environment variable as comma-separated string
+    # Example: BACKEND_CORS_ORIGINS=http://localhost:3000,https://username.github.io
     BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    
+    def get_cors_origins(self):
+        """Parse CORS origins from environment variable or use default list"""
+        cors_env = os.getenv("BACKEND_CORS_ORIGINS")
+        if cors_env:
+            # Split by comma and strip whitespace
+            return [origin.strip() for origin in cors_env.split(",")]
+        return self.BACKEND_CORS_ORIGINS
     
     # Security
     SECRET_KEY: str = "your-secret-key-here"

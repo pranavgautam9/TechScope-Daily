@@ -72,6 +72,8 @@ interface DailyFact {
   category: string;
 }
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const LoadingSpinner: React.FC = () => {
   const [dailyFact, setDailyFact] = useState<DailyFact | null>(null);
   const [isLoadingFact, setIsLoadingFact] = useState(true);
@@ -81,7 +83,7 @@ const LoadingSpinner: React.FC = () => {
     const fetchDailyFact = async () => {
       try {
         setIsLoadingFact(true);
-        const response = await fetch('http://localhost:8000/api/facts/daily');
+        const response = await fetch(`${API_BASE_URL}/api/facts/daily`);
         if (response.ok) {
           const data = await response.json();
           setDailyFact(data.data);
