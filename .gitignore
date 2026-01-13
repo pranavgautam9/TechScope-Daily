@@ -148,7 +148,7 @@ venv/
 backend/venv/
 
 # Package lock files
-frontend/package-lock.json
+# Note: package-lock.json should be committed for consistent builds
 
 # Coverage reports
 coverage/
