@@ -96,7 +96,9 @@ class BreakingNewsService:
                 description_elem = item.find('description')
                 
                 # Extract and clean text
-                title = title_elem.get_text(strip=True) if title_elem else ""
+                raw_title = title_elem.get_text(strip=True) if title_elem else ""
+                # Clean common source suffixes from titles (e.g. " - WIRED", " - Wired")
+                title = self._clean_title(raw_title)
                 link = link_elem.get_text(strip=True) if link_elem else ""
                 pub_date = pub_date_elem.get_text(strip=True) if pub_date_elem else ""
                 
@@ -193,7 +195,9 @@ class BreakingNewsService:
                 description_elem = item.find('description')
                 
                 # Extract and clean text
-                title = title_elem.get_text(strip=True) if title_elem else ""
+                raw_title = title_elem.get_text(strip=True) if title_elem else ""
+                # Clean common source suffixes from titles (e.g. " - WIRED", " - Wired")
+                title = self._clean_title(raw_title)
                 link = link_elem.get_text(strip=True) if link_elem else ""
                 pub_date = pub_date_elem.get_text(strip=True) if pub_date_elem else ""
                 
@@ -260,6 +264,26 @@ class BreakingNewsService:
         except Exception as e:
             print(f"Error fetching Wired news: {e}")
             return []
+    
+    def _clean_title(self, title: str) -> str:
+        """Remove common source suffixes from article titles (e.g. ' - WIRED')."""
+        if not title:
+            return title
+        
+        # Known suffix patterns to strip
+        suffixes = [
+            " - WIRED",
+            " - Wired",
+            " | WIRED",
+            " | Wired",
+        ]
+        
+        cleaned = title
+        for suffix in suffixes:
+            if cleaned.endswith(suffix):
+                cleaned = cleaned[: -len(suffix)].rstrip()
+        
+        return cleaned
     
     def get_trending_news(self, db: Session, limit: int = 10) -> List[Dict]:
         """Get trending breaking news based on importance and recency"""
