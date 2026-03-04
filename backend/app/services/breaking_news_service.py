@@ -14,6 +14,14 @@ class BreakingNewsService:
     def __init__(self):
         self.google_news_url = "https://news.google.com/rss/search"
         self.wired_rss_url = "https://www.wired.com/feed/rss"
+        self.techcrunch_rss_url = "https://techcrunch.com/feed/"
+        self.theverge_rss_url = "https://www.theverge.com/rss/index.xml"
+        self.arstechnica_rss_url = "https://feeds.arstechnica.com/arstechnica/index"
+        self.engadget_rss_url = "https://www.engadget.com/rss.xml"
+        self.mit_tech_review_rss_url = "https://www.technologyreview.com/feed/"
+        self.cnet_rss_url = "https://www.cnet.com/rss/news/"
+        self.venturebeat_rss_url = "https://venturebeat.com/feed/"
+        self.techrepublic_rss_url = "https://www.techrepublic.com/rssfeeds/articles/"
         self.tech_keywords = [
             "artificial intelligence", "AI", "machine learning", "ML",
             "tech company", "startup", "venture capital", "IPO",
@@ -176,11 +184,83 @@ class BreakingNewsService:
     
     async def fetch_wired_news(self, db: Session) -> List[Dict]:
         """Fetch news from Wired.com RSS feed"""
+        return await self._fetch_rss_feed(self.wired_rss_url, "wired.com", db, limit=15, require_breaking=False)
+    
+    async def fetch_techcrunch_news(self, db: Session) -> List[Dict]:
+        """Fetch news from TechCrunch RSS feed"""
+        return await self._fetch_rss_feed(self.techcrunch_rss_url, "techcrunch.com", db, limit=15, require_breaking=False)
+    
+    async def fetch_theverge_news(self, db: Session) -> List[Dict]:
+        """Fetch news from The Verge RSS feed"""
+        return await self._fetch_rss_feed(self.theverge_rss_url, "theverge.com", db, limit=15, require_breaking=False)
+    
+    async def fetch_arstechnica_news(self, db: Session) -> List[Dict]:
+        """Fetch news from Ars Technica RSS feed"""
+        return await self._fetch_rss_feed(self.arstechnica_rss_url, "arstechnica.com", db, limit=15, require_breaking=False)
+    
+    async def fetch_engadget_news(self, db: Session) -> List[Dict]:
+        """Fetch news from Engadget RSS feed"""
+        return await self._fetch_rss_feed(self.engadget_rss_url, "engadget.com", db, limit=15, require_breaking=False)
+    
+    async def fetch_mit_tech_review_news(self, db: Session) -> List[Dict]:
+        """Fetch news from MIT Technology Review RSS feed"""
+        return await self._fetch_rss_feed(self.mit_tech_review_rss_url, "technologyreview.com", db, limit=15, require_breaking=False)
+    
+    async def fetch_cnet_news(self, db: Session) -> List[Dict]:
+        """Fetch news from CNET RSS feed"""
+        return await self._fetch_rss_feed(self.cnet_rss_url, "cnet.com", db, limit=15, require_breaking=False)
+    
+    async def fetch_venturebeat_news(self, db: Session) -> List[Dict]:
+        """Fetch news from VentureBeat RSS feed"""
+        return await self._fetch_rss_feed(self.venturebeat_rss_url, "venturebeat.com", db, limit=15, require_breaking=False)
+    
+    async def fetch_techrepublic_news(self, db: Session) -> List[Dict]:
+        """Fetch news from TechRepublic RSS feed"""
+        return await self._fetch_rss_feed(self.techrepublic_rss_url, "techrepublic.com", db, limit=15, require_breaking=False)
+    
+    def _clean_title(self, title: str) -> str:
+        """Remove common source suffixes from article titles."""
+        if not title:
+            return title
+        
+        # Known suffix patterns to strip (order matters - longer first)
+        suffixes = [
+            " - TechCrunch",
+            " | TechCrunch",
+            " - The Verge",
+            " | The Verge",
+            " - Ars Technica",
+            " | Ars Technica",
+            " - Engadget",
+            " | Engadget",
+            " - MIT Technology Review",
+            " | MIT Technology Review",
+            " - CNET",
+            " | CNET",
+            " - VentureBeat",
+            " | VentureBeat",
+            " - TechRepublic",
+            " | TechRepublic",
+            " - WIRED",
+            " - Wired",
+            " | WIRED",
+            " | Wired",
+        ]
+        
+        cleaned = title
+        for suffix in suffixes:
+            if cleaned.endswith(suffix):
+                cleaned = cleaned[: -len(suffix)].rstrip()
+        
+        return cleaned
+    
+    async def _fetch_rss_feed(self, rss_url: str, source_name: str, db: Session, limit: int = 15, require_breaking: bool = False) -> List[Dict]:
+        """Generic helper method to fetch and process RSS feeds"""
         try:
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
-            response = requests.get(self.wired_rss_url, headers=headers, timeout=10)
+            response = requests.get(rss_url, headers=headers, timeout=10)
             response.raise_for_status()
             
             soup = BeautifulSoup(response.content, 'xml')
@@ -188,7 +268,7 @@ class BreakingNewsService:
             
             fetched_news = []
             
-            for item in items[:15]:  # Limit to 15 items
+            for item in items[:limit]:
                 title_elem = item.find('title')
                 link_elem = item.find('link')
                 pub_date_elem = item.find('pubDate')
@@ -196,7 +276,6 @@ class BreakingNewsService:
                 
                 # Extract and clean text
                 raw_title = title_elem.get_text(strip=True) if title_elem else ""
-                # Clean common source suffixes from titles (e.g. " - WIRED", " - Wired")
                 title = self._clean_title(raw_title)
                 link = link_elem.get_text(strip=True) if link_elem else ""
                 pub_date = pub_date_elem.get_text(strip=True) if pub_date_elem else ""
@@ -231,9 +310,13 @@ class BreakingNewsService:
                                 description = article_content
                         except Exception as e:
                             print(f"Could not fetch article content: {e}")
-                            description = f"This Wired article covers {title.lower()}. Click 'Read Full Story' to view the complete article."
+                            description = f"This {source_name} article covers {title.lower()}. Click 'Read Full Story' to view the complete article."
                 else:
-                    description = f"This Wired article covers {title.lower()}. Click 'Read Full Story' to view the complete article."
+                    description = f"This {source_name} article covers {title.lower()}. Click 'Read Full Story' to view the complete article."
+                
+                # Check if this is breaking news (if required)
+                if require_breaking and not self._is_breaking_news(title, description):
+                    continue
                 
                 # Check if already exists
                 existing = db.query(BreakingNews).filter(
@@ -244,7 +327,7 @@ class BreakingNewsService:
                     news_item = BreakingNews(
                         title=title,
                         content=description,
-                        source="wired.com",
+                        source=source_name,
                         url=link,
                         category=self._categorize_news(title, description),
                         published_at=self._parse_date(pub_date)
@@ -254,7 +337,7 @@ class BreakingNewsService:
                     fetched_news.append({
                         "title": title,
                         "content": description,
-                        "source": "wired.com",
+                        "source": source_name,
                         "url": link
                     })
             
@@ -262,28 +345,8 @@ class BreakingNewsService:
             return fetched_news
             
         except Exception as e:
-            print(f"Error fetching Wired news: {e}")
+            print(f"Error fetching {source_name} news: {e}")
             return []
-    
-    def _clean_title(self, title: str) -> str:
-        """Remove common source suffixes from article titles (e.g. ' - WIRED')."""
-        if not title:
-            return title
-        
-        # Known suffix patterns to strip
-        suffixes = [
-            " - WIRED",
-            " - Wired",
-            " | WIRED",
-            " | Wired",
-        ]
-        
-        cleaned = title
-        for suffix in suffixes:
-            if cleaned.endswith(suffix):
-                cleaned = cleaned[: -len(suffix)].rstrip()
-        
-        return cleaned
     
     def get_trending_news(self, db: Session, limit: int = 10) -> List[Dict]:
         """Get trending breaking news based on importance and recency"""

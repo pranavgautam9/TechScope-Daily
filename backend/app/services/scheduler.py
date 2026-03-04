@@ -58,17 +58,39 @@ class NewsScheduler:
             db.close()
     
     async def fetch_and_analyze_breaking_news(self):
-        """Fetch breaking news and analyze with AI"""
+        """Fetch breaking news from all sources and analyze with AI"""
         try:
             db = SessionLocal()
             
-            # Fetch from Google News (filtered for tech/Wired)
-            print(f"[{datetime.now()}] Fetching Google News...")
-            google_news = await self.breaking_news_service.fetch_google_news(db)
+            total_fetched = 0
+            source_counts = {}
             
-            # Fetch from Wired.com
-            print(f"[{datetime.now()}] Fetching Wired.com News...")
-            wired_news = await self.breaking_news_service.fetch_wired_news(db)
+            # Fetch from all 10 news sources
+            sources = [
+                ("Google News", self.breaking_news_service.fetch_google_news),
+                ("Wired.com", self.breaking_news_service.fetch_wired_news),
+                ("TechCrunch", self.breaking_news_service.fetch_techcrunch_news),
+                ("The Verge", self.breaking_news_service.fetch_theverge_news),
+                ("Ars Technica", self.breaking_news_service.fetch_arstechnica_news),
+                ("Engadget", self.breaking_news_service.fetch_engadget_news),
+                ("MIT Technology Review", self.breaking_news_service.fetch_mit_tech_review_news),
+                ("CNET", self.breaking_news_service.fetch_cnet_news),
+                ("VentureBeat", self.breaking_news_service.fetch_venturebeat_news),
+                ("TechRepublic", self.breaking_news_service.fetch_techrepublic_news),
+            ]
+            
+            for source_name, fetch_func in sources:
+                try:
+                    print(f"[{datetime.now()}] Fetching {source_name}...")
+                    news_items = await fetch_func(db)
+                    count = len(news_items)
+                    total_fetched += count
+                    source_counts[source_name] = count
+                    print(f"[{datetime.now()}] Fetched {count} items from {source_name}")
+                except Exception as e:
+                    print(f"[{datetime.now()}] Error fetching {source_name}: {e}")
+                    source_counts[source_name] = 0
+                    continue
             
             # Analyze importance for new breaking news
             breaking_news = db.query(BreakingNews).filter(
@@ -95,10 +117,13 @@ class NewsScheduler:
                     continue
             
             db.commit()
-            print(f"[{datetime.now()}] Completed breaking news update. Fetched: {len(google_news) + len(wired_news)} items (Google: {len(google_news)}, Wired: {len(wired_news)})")
+            source_summary = ", ".join([f"{name}: {count}" for name, count in source_counts.items()])
+            print(f"[{datetime.now()}] Completed breaking news update. Total fetched: {total_fetched} items ({source_summary})")
             
         except Exception as e:
             print(f"Error in scheduled breaking news fetch: {e}")
+            import traceback
+            traceback.print_exc()
         finally:
             db.close()
     
