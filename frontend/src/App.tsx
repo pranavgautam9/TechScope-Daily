@@ -7,6 +7,8 @@ import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
 import SlidingCards from './components/SlidingCards';
 import LoadingSpinner from './components/LoadingSpinner';
+import LoginPage from './components/LoginPage';
+import { useAuth } from './contexts/AuthContext';
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -25,6 +27,7 @@ const MainContent = styled.main`
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<'news' | 'stocks'>('news');
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     // Simulate loading time - increased to 5 seconds for fact reading
@@ -35,10 +38,33 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) {
+  // Show loading spinner while app is loading or auth is being checked
+  if (isLoading || authLoading) {
     return <LoadingSpinner />;
   }
 
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+            },
+          }}
+        />
+        <LoginPage />
+      </>
+    );
+  }
+
+  // Show main app if authenticated
   return (
     <Router>
       <AppContainer>

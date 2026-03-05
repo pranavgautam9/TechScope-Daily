@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import uvicorn
 
-from app.api.routes import news, facts, stocks, breaking_news
+from app.api.routes import news, facts, stocks, breaking_news, auth
 from app.core.config import settings
 from app.services.scheduler import start_breaking_news_scheduler
 
@@ -36,6 +36,7 @@ app.add_middleware(
 )
 
 # Include API routes
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(news.router, prefix="/api/news", tags=["news"])
 app.include_router(facts.router, prefix="/api/facts", tags=["facts"])
 app.include_router(stocks.router, prefix="/api/stocks", tags=["stocks"])
