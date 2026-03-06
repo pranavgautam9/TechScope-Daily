@@ -1,7 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FiFileText, FiTrendingUp } from 'react-icons/fi';
+import { FiFileText, FiTrendingUp, FiLogOut } from 'react-icons/fi';
+import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 interface HeaderProps {
   activeSection: 'news' | 'stocks';
@@ -71,11 +73,38 @@ const NavTab = styled(motion.button)<{ $active: boolean }>`
   }
 `;
 
+const LogoutButton = styled(motion.button)`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  margin-left: 0.5rem;
+  
+  &:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+  }
+`;
+
 const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
+  const { logout } = useAuth();
   const tabs = [
     { id: 'news', label: 'News', icon: FiFileText },
     { id: 'stocks', label: 'Live Stocks', icon: FiTrendingUp },
   ] as const;
+
+  const handleLogout = () => {
+    logout();
+    toast.success('Logged out successfully');
+  };
 
   return (
     <HeaderContainer>
@@ -103,6 +132,14 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
               </NavTab>
             );
           })}
+          <LogoutButton
+            onClick={handleLogout}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <FiLogOut size={18} />
+            Logout
+          </LogoutButton>
         </Navigation>
       </HeaderContent>
     </HeaderContainer>
