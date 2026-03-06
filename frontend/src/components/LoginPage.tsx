@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FiMail, FiLock, FiUser, FiLogIn, FiUserPlus } from 'react-icons/fi';
+import { FiMail, FiLock, FiUser, FiLogIn, FiUserPlus, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -111,6 +111,33 @@ const Input = styled.input`
   }
 `;
 
+const PasswordInput = styled(Input)`
+  padding-right: 50px;
+`;
+
+const EyeIconButton = styled.button`
+  position: absolute;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.3s ease;
+  z-index: 1;
+
+  &:hover {
+    color: #667eea;
+  }
+
+  &:focus {
+    outline: none;
+  }
+`;
+
 const NameInputs = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -164,6 +191,7 @@ const LoginPage: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const { login, signup } = useAuth();
 
@@ -200,6 +228,11 @@ const LoginPage: React.FC = () => {
     setPassword('');
     setFirstName('');
     setLastName('');
+    setShowPassword(false);
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -281,14 +314,21 @@ const LoginPage: React.FC = () => {
               <Icon>
                 <FiLock size={20} />
               </Icon>
-              <Input
-                type="password"
+              <PasswordInput
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
               />
+              <EyeIconButton
+                type="button"
+                onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </EyeIconButton>
             </InputWrapper>
           </InputGroup>
 
