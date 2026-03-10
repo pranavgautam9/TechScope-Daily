@@ -25,11 +25,27 @@
 - 🤖 **AI-Powered**: Free AI integration for fact generation and content analysis
 - 📊 **Stock Tracking**: Real-time data for major tech companies
 - 🎨 **Modern UI**: Beautiful glassmorphism design with smooth animations
+- 🔐 **Login & Accounts**: Built-in signup/login with JWT auth and a ready-to-use test account
 - 🔄 **Auto-Rotating Cards**: Sliding card interface for easy browsing
 
 ---
 
 ## ✨ Features
+
+### 🔐 Authentication & Login Flow
+
+- **Loading Screen First**: On startup, users see a dynamic loading screen with a daily AI-generated tech fact.
+- **Login / Signup Screen**: After loading, users land on a dedicated authentication page with:
+  - Separate **Login** and **Create Account** tabs
+  - Email, first name, last name, and password fields for signup
+  - Password visibility toggle (eye icon) for better UX
+- **Secure Authentication**: Backed by FastAPI + JWT; passwords are hashed before storage.
+- **Persistent Sessions**: Auth state and token are stored in the browser so users stay logged in across refreshes.
+- **Logout Control**: A prominent **Logout** button in the navbar (top-right, next to *News* and *Live Stocks*).
+- **Current Behavior**: After login, users see the same curated tech news and stocks feed (personalized sources and stocks are coming next).
+- **Built-in Test User**:
+  - Email: `testuser@gmail.com`
+  - Password: `Password123!`
 
 ### 🧠 Daily Facts
 
@@ -76,12 +92,11 @@
 
 We're constantly working to improve TechScope Daily! Here's what's coming next:
 
-### 👤 User Authentication & Accounts
+### 👤 Enhanced User Accounts & Settings
 
-- **Individual User Accounts**: Each user will be able to create their own account and login separately
-- **Secure Authentication**: JWT-based authentication system for secure user sessions
-- **Profile Management**: Users can customize their profiles, preferences, and settings
-- **Account Settings**: Full account management including password changes, email updates, and profile customization
+- **Richer Profiles**: Extended profile fields and preferences for each user
+- **Account Settings**: In-app management including password changes, email updates, and profile customization
+- **Session Controls**: Device/session management and advanced security options
 
 ### 📰 Personalized News Feed
 
@@ -142,42 +157,48 @@ TechScope Daily/
 ├── backend/
 │   ├── app/
 │   │   ├── ai/
-│   │   │   └── content_generator.py    # AI fact generation & news analysis
+│   │   │   └── content_generator.py      # AI fact generation & news analysis
 │   │   ├── api/
 │   │   │   └── routes/
-│   │   │       ├── news.py            # News endpoints
-│   │   │       ├── breaking_news.py   # Breaking news endpoints
-│   │   │       ├── stocks.py          # Stock endpoints
-│   │   │       └── facts.py            # Daily facts endpoints
+│   │   │       ├── auth.py              # Authentication (signup, login, current user)
+│   │   │       ├── news.py              # News endpoints
+│   │   │       ├── breaking_news.py     # Breaking news endpoints
+│   │   │       ├── stocks.py            # Stock endpoints
+│   │   │       └── facts.py             # Daily facts endpoints
 │   │   ├── core/
-│   │   │   └── config.py              # Configuration & settings
+│   │   │   ├── config.py                # Configuration & settings
+│   │   │   └── security.py              # Password hashing & JWT helpers
 │   │   ├── models/
-│   │   │   └── database.py             # Database models
+│   │   │   └── database.py              # Database models (including User)
 │   │   └── services/
-│   │       ├── news_service.py         # News business logic
+│   │       ├── news_service.py          # News business logic
 │   │       ├── breaking_news_service.py # Breaking news fetching
-│   │       ├── stock_service.py        # Stock data management
-│   │       └── scheduler.py            # Daily task scheduler
-│   ├── main.py                         # FastAPI app entry point
+│   │       ├── stock_service.py         # Stock data management
+│   │       └── scheduler.py             # Daily task scheduler
+│   ├── main.py                          # FastAPI app entry point (includes test user creation)
+│   ├── create_test_user.py              # One-off script to create the test user (optional)
 │   ├── requirements.txt                 # Python dependencies
-│   └── techscope_daily.db              # SQLite database
+│   └── techscope_daily.db               # SQLite database
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Header.tsx              # Navigation header
-│   │   │   ├── SlidingCards.tsx        # Card carousel container
-│   │   │   ├── NewsSection.tsx         # News card component
-│   │   │   ├── StocksSection.tsx       # Stock card component
-│   │   │   └── LoadingSpinner.tsx      # Loading screen with facts
-│   │   ├── App.tsx                     # Main app component
-│   │   ├── index.tsx                   # React entry point
-│   │   └── index.css                   # Global styles
-│   ├── package.json                    # Node.js dependencies
-│   └── build/                          # Production build
+│   │   │   ├── Header.tsx               # Navigation header (with Logout)
+│   │   │   ├── LoginPage.tsx            # Login & signup UI with password visibility toggle
+│   │   │   ├── SlidingCards.tsx         # Card carousel container
+│   │   │   ├── NewsSection.tsx          # News card component
+│   │   │   ├── StocksSection.tsx        # Stock card component
+│   │   │   └── LoadingSpinner.tsx       # Loading screen with facts
+│   │   ├── contexts/
+│   │   │   └── AuthContext.tsx          # Global auth state (user, token, login, signup, logout)
+│   │   ├── App.tsx                      # Main app component & routing (loading → login → app)
+│   │   ├── index.tsx                    # React entry point
+│   │   └── index.css                    # Global styles
+│   ├── package.json                     # Node.js dependencies
+│   └── build/                           # Production build
 │
-├── README.md                            # This file
-└── setup.md                             # Detailed setup guide
+├── README.md                             # This file
+└── setup.md                              # Detailed setup guide
 ```
 
 ---
@@ -276,6 +297,15 @@ The frontend will be available at: **http://localhost:3000**
 - **Backend API**: http://localhost:8000
 - **API Documentation (Swagger)**: http://localhost:8000/docs
 - **Alternative API Docs (ReDoc)**: http://localhost:8000/redoc
+
+### Default Login / Test Account
+
+- After both servers are running, open the frontend and wait for the loading screen to finish.
+- You will be redirected to the **Login / Signup** page.
+- You can either create a new account or use the built-in test user:
+  - Email: `testuser@gmail.com`
+  - Password: `Password123!`
+- Once logged in, you can navigate between **News** and **Live Stocks** and log out using the navbar button.
 
 ---
 
