@@ -148,6 +148,47 @@ const NewsSection: React.FC<NewsSectionProps> = ({ card }) => {
   // Get content and ensure it's different from title, truncate if needed
   let displayContent = card.content || '';
   const title = card.title || '';
+  const rawSource = card.source || '';
+
+  let displaySource = '';
+  if (rawSource) {
+    switch (rawSource) {
+      case 'google_news':
+        displaySource = 'Google News';
+        break;
+      case 'wired.com':
+        displaySource = 'Wired';
+        break;
+      case 'techcrunch.com':
+        displaySource = 'TechCrunch';
+        break;
+      case 'theverge.com':
+        displaySource = 'The Verge';
+        break;
+      case 'arstechnica.com':
+        displaySource = 'Ars Technica';
+        break;
+      case 'engadget.com':
+        displaySource = 'Engadget';
+        break;
+      case 'technologyreview.com':
+        displaySource = 'MIT Technology Review';
+        break;
+      case 'cnet.com':
+        displaySource = 'CNET';
+        break;
+      case 'venturebeat.com':
+        displaySource = 'VentureBeat';
+        break;
+      case 'techrepublic.com':
+        displaySource = 'TechRepublic';
+        break;
+      default:
+        displaySource = rawSource;
+    }
+  }
+
+  const fullTitle = displaySource ? `${title} - ${displaySource}` : title;
   
   // Clean up content - remove title if it appears at the start
   if (displayContent.toLowerCase().startsWith(title.toLowerCase())) {
@@ -189,7 +230,7 @@ const NewsSection: React.FC<NewsSectionProps> = ({ card }) => {
     >
       <Header>
         <HeaderText>
-          <Title $isBreaking={isBreaking} $isCritical={isCritical}>{title}</Title>
+          <Title $isBreaking={isBreaking} $isCritical={isCritical}>{fullTitle}</Title>
         </HeaderText>
       </Header>
       

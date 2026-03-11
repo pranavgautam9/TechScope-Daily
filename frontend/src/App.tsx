@@ -9,6 +9,7 @@ import SlidingCards from './components/SlidingCards';
 import LoadingSpinner from './components/LoadingSpinner';
 import LoginPage from './components/LoginPage';
 import { useAuth } from './contexts/AuthContext';
+import PreferencesModal from './components/PreferencesModal';
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -27,7 +28,10 @@ const MainContent = styled.main`
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<'news' | 'stocks'>('news');
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const [selectedNewsSources, setSelectedNewsSources] = useState<string[]>([]);
+  const [selectedStockSymbols, setSelectedStockSymbols] = useState<string[]>([]);
+  const [showPreferences, setShowPreferences] = useState(false);
 
   useEffect(() => {
     // Simulate loading time - increased to 5 seconds for fact reading
@@ -37,6 +41,33 @@ const App: React.FC = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Load saved preferences when user becomes authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      return;
+    }
+    const storageKey = `techscope_prefs_${user.id}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as {
+          newsSources?: string[];
+          stockSymbols?: string[];
+        };
+        setSelectedNewsSources(parsed.newsSources || []);
+        setSelectedStockSymbols(parsed.stockSymbols || []);
+      } catch {
+        setSelectedNewsSources([]);
+        setSelectedStockSymbols([]);
+      }
+    } else {
+      // No saved prefs yet – open modal with sensible defaults (all selected)
+      setSelectedNewsSources([]);
+      setSelectedStockSymbols([]);
+    }
+    setShowPreferences(true);
+  }, [isAuthenticated, user]);
 
   // Show loading spinner while app is loading or auth is being checked
   if (isLoading || authLoading) {
@@ -64,6 +95,18 @@ const App: React.FC = () => {
     );
   }
 
+  const handleSavePreferences = (newsSources: string[], stockSymbols: string[]) => {
+    if (!user) return;
+    setSelectedNewsSources(newsSources);
+    setSelectedStockSymbols(stockSymbols);
+    const storageKey = `techscope_prefs_${user.id}`;
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({ newsSources, stockSymbols })
+    );
+    setShowPreferences(false);
+  };
+
   // Show main app if authenticated
   return (
     <Router>
@@ -84,6 +127,12 @@ const App: React.FC = () => {
         <Header activeSection={activeSection} setActiveSection={setActiveSection} />
         
         <MainContent>
+          <PreferencesModal
+            isOpen={showPreferences}
+            initialNewsSources={selectedNewsSources}
+            initialStockSymbols={selectedStockSymbols}
+            onSave={handleSavePreferences}
+          />
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
@@ -92,7 +141,11 @@ const App: React.FC = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <SlidingCards activeSection={activeSection} />
+              <SlidingCards
+                activeSection={activeSection}
+                selectedNewsSources={selectedNewsSources}
+                selectedStockSymbols={selectedStockSymbols}
+              />
             </motion.div>
           </AnimatePresence>
         </MainContent>
