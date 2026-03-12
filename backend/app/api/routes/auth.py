@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
-from typing import Optional
 from datetime import timedelta
 
 from app.models.database import get_db, User
@@ -36,6 +35,11 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
 
 # Dependency to get current user
 async def get_current_user(
@@ -150,4 +154,24 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         first_name=current_user.first_name,
         last_name=current_user.last_name
     )
+
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+async def change_password(
+    payload: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Change password for the currently authenticated user."""
+    if not verify_password(payload.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    current_user.hashed_password = get_password_hash(payload.new_password)
+    db.add(current_user)
+    db.commit()
+
+    return {"detail": "Password updated successfully"}
 

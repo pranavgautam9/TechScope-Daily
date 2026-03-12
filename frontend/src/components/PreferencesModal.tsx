@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 
+type PreferencesMode = 'both' | 'news' | 'stocks';
+
 interface PreferencesModalProps {
   isOpen: boolean;
   initialNewsSources: string[];
   initialStockSymbols: string[];
   onSave: (newsSources: string[], stockSymbols: string[]) => void;
+  mode?: PreferencesMode;
 }
 
 // Internal representation values MUST match backend `source` and stock `symbol` fields
@@ -225,6 +228,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
   initialNewsSources,
   initialStockSymbols,
   onSave,
+  mode = 'both',
 }) => {
   const [selectedNewsSources, setSelectedNewsSources] = useState<string[]>(initialNewsSources);
   const [selectedStockSymbols, setSelectedStockSymbols] = useState<string[]>(initialStockSymbols);
@@ -259,9 +263,21 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
   };
 
   const handleSave = () => {
-    if (selectedNewsSources.length === 0 || selectedStockSymbols.length === 0) {
-      setError('Please choose at least one news source and one company.');
-      return;
+    if (mode === 'both') {
+      if (selectedNewsSources.length === 0 || selectedStockSymbols.length === 0) {
+        setError('Please choose at least one news source and one company.');
+        return;
+      }
+    } else if (mode === 'news') {
+      if (selectedNewsSources.length === 0) {
+        setError('Please choose at least one news source.');
+        return;
+      }
+    } else if (mode === 'stocks') {
+      if (selectedStockSymbols.length === 0) {
+        setError('Please choose at least one company.');
+        return;
+      }
     }
     setError(null);
     onSave(selectedNewsSources, selectedStockSymbols);
@@ -293,45 +309,49 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
           </div>
 
           <SectionsGrid>
-            <Section>
-              <SectionTitle>News sources</SectionTitle>
-              <SectionHint>Select one or more tech news outlets.</SectionHint>
-              <OptionsList>
-                {AVAILABLE_NEWS_SOURCES.map((source) => (
-                  <OptionRow key={source.id}>
-                    <Checkbox
-                      type="checkbox"
-                      checked={selectedNewsSources.includes(source.id)}
-                      onChange={() => toggleNewsSource(source.id)}
-                    />
-                    <OptionLabel>{source.label}</OptionLabel>
-                  </OptionRow>
-                ))}
-              </OptionsList>
-              <GhostButton type="button" onClick={handleSelectAllNews}>
-                Select all sources
-              </GhostButton>
-            </Section>
+            {(mode === 'both' || mode === 'news') && (
+              <Section>
+                <SectionTitle>News sources</SectionTitle>
+                <SectionHint>Select one or more tech news outlets.</SectionHint>
+                <OptionsList>
+                  {AVAILABLE_NEWS_SOURCES.map((source) => (
+                    <OptionRow key={source.id}>
+                      <Checkbox
+                        type="checkbox"
+                        checked={selectedNewsSources.includes(source.id)}
+                        onChange={() => toggleNewsSource(source.id)}
+                      />
+                      <OptionLabel>{source.label}</OptionLabel>
+                    </OptionRow>
+                  ))}
+                </OptionsList>
+                <GhostButton type="button" onClick={handleSelectAllNews}>
+                  Select all sources
+                </GhostButton>
+              </Section>
+            )}
 
-            <Section>
-              <SectionTitle>Companies to track</SectionTitle>
-              <SectionHint>Pick from the 10 major tech stocks.</SectionHint>
-              <OptionsList>
-                {AVAILABLE_STOCK_SYMBOLS.map((stock) => (
-                  <OptionRow key={stock.id}>
-                    <Checkbox
-                      type="checkbox"
-                      checked={selectedStockSymbols.includes(stock.id)}
-                      onChange={() => toggleStockSymbol(stock.id)}
-                    />
-                    <OptionLabel>{stock.label}</OptionLabel>
-                  </OptionRow>
-                ))}
-              </OptionsList>
-              <GhostButton type="button" onClick={handleSelectAllStocks}>
-                Select all companies
-              </GhostButton>
-            </Section>
+            {(mode === 'both' || mode === 'stocks') && (
+              <Section>
+                <SectionTitle>Companies to track</SectionTitle>
+                <SectionHint>Pick from the 10 major tech stocks.</SectionHint>
+                <OptionsList>
+                  {AVAILABLE_STOCK_SYMBOLS.map((stock) => (
+                    <OptionRow key={stock.id}>
+                      <Checkbox
+                        type="checkbox"
+                        checked={selectedStockSymbols.includes(stock.id)}
+                        onChange={() => toggleStockSymbol(stock.id)}
+                      />
+                      <OptionLabel>{stock.label}</OptionLabel>
+                    </OptionRow>
+                  ))}
+                </OptionsList>
+                <GhostButton type="button" onClick={handleSelectAllStocks}>
+                  Select all companies
+                </GhostButton>
+              </Section>
+            )}
           </SectionsGrid>
 
           <Footer>

@@ -10,6 +10,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import LoginPage from './components/LoginPage';
 import { useAuth } from './contexts/AuthContext';
 import PreferencesModal from './components/PreferencesModal';
+import ChangePasswordModal from './components/ChangePasswordModal';
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -32,6 +33,8 @@ const App: React.FC = () => {
   const [selectedNewsSources, setSelectedNewsSources] = useState<string[]>([]);
   const [selectedStockSymbols, setSelectedStockSymbols] = useState<string[]>([]);
   const [showPreferences, setShowPreferences] = useState(false);
+  const [preferencesMode, setPreferencesMode] = useState<'both' | 'news' | 'stocks'>('both');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     // Simulate loading time - increased to 5 seconds for fact reading
@@ -61,11 +64,15 @@ const App: React.FC = () => {
         setSelectedNewsSources([]);
         setSelectedStockSymbols([]);
       }
-    } else {
-      // No saved prefs yet – open modal with sensible defaults (all selected)
-      setSelectedNewsSources([]);
-      setSelectedStockSymbols([]);
+      // Preferences already exist – do not auto-open modal on login
+      setShowPreferences(false);
+      return;
     }
+
+    // No saved prefs yet – start with empty arrays and prompt user once
+    setSelectedNewsSources([]);
+    setSelectedStockSymbols([]);
+    setPreferencesMode('both');
     setShowPreferences(true);
   }, [isAuthenticated, user]);
 
@@ -124,7 +131,19 @@ const App: React.FC = () => {
           }}
         />
         
-        <Header activeSection={activeSection} setActiveSection={setActiveSection} />
+        <Header
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          onOpenNewsPreferences={() => {
+            setPreferencesMode('news');
+            setShowPreferences(true);
+          }}
+          onOpenStockPreferences={() => {
+            setPreferencesMode('stocks');
+            setShowPreferences(true);
+          }}
+          onOpenPasswordModal={() => setShowPasswordModal(true)}
+        />
         
         <MainContent>
           <PreferencesModal
@@ -132,6 +151,11 @@ const App: React.FC = () => {
             initialNewsSources={selectedNewsSources}
             initialStockSymbols={selectedStockSymbols}
             onSave={handleSavePreferences}
+            mode={preferencesMode}
+          />
+          <ChangePasswordModal
+            isOpen={showPasswordModal}
+            onClose={() => setShowPasswordModal(false)}
           />
           <AnimatePresence mode="wait">
             <motion.div
