@@ -41,8 +41,15 @@
   - Password visibility toggle (eye icon) for better UX
 - **Secure Authentication**: Backed by FastAPI + JWT; passwords are hashed before storage.
 - **Persistent Sessions**: Auth state and token are stored in the browser so users stay logged in across refreshes.
-- **Logout Control**: A prominent **Logout** button in the navbar (top-right, next to *News* and *Live Stocks*).
-- **Current Behavior**: After login, users see the same curated tech news and stocks feed (personalized sources and stocks are coming next).
+- **Logout & Account Controls**: A prominent **Logout** button and an **Account** menu in the navbar (top-right, next to *News* and *Live Stocks*).
+- **First-Time Preferences**: On the very first login for a user, a one-time preferences dialog appears so they can choose:
+  - Which **tech news sources** to follow (Google News Tech, Wired, TechCrunch, etc.)
+  - Which **tech companies** to track in the stocks view
+  These preferences are saved per-user in the browser and are **not shown again** automatically on subsequent logins.
+- **In-App Account Settings**: From the account menu, users can:
+  - **Change news sources** (re-open the news-only preferences dialog)
+  - **Change companies** (re-open the stocks-only preferences dialog)
+  - **Change password** (via a secure in-app password change flow)
 - **Built-in Test User**:
   - Email: `testuser@gmail.com`
   - Password: `Password123!`
@@ -94,8 +101,8 @@ We're constantly working to improve TechScope Daily! Here's what's coming next:
 
 ### 👤 Enhanced User Accounts & Settings
 
-- **Richer Profiles**: Extended profile fields and preferences for each user
-- **Account Settings**: In-app management including password changes, email updates, and profile customization
+- **Richer Profiles**: Extended profile fields and preferences for each user (beyond the current news/source & company selections)
+- **Expanded Account Settings**: Additional in-app management including email updates and deeper profile customization (basic password change and content preferences already supported)
 - **Session Controls**: Device/session management and advanced security options
 
 ### 📰 Personalized News Feed
@@ -183,12 +190,14 @@ TechScope Daily/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Header.tsx               # Navigation header (with Logout)
+│   │   │   ├── Header.tsx               # Navigation header (tabs, account menu, logout)
 │   │   │   ├── LoginPage.tsx            # Login & signup UI with password visibility toggle
 │   │   │   ├── SlidingCards.tsx         # Card carousel container
 │   │   │   ├── NewsSection.tsx          # News card component
 │   │   │   ├── StocksSection.tsx        # Stock card component
-│   │   │   └── LoadingSpinner.tsx       # Loading screen with facts
+│   │   │   ├── LoadingSpinner.tsx       # Loading screen with facts
+│   │   │   ├── PreferencesModal.tsx     # First-time and in-app selection of news sources & companies
+│   │   │   └── ChangePasswordModal.tsx  # In-app password change dialog
 │   │   ├── contexts/
 │   │   │   └── AuthContext.tsx          # Global auth state (user, token, login, signup, logout)
 │   │   ├── App.tsx                      # Main app component & routing (loading → login → app)
