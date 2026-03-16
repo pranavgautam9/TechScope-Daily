@@ -34,6 +34,13 @@
 
 ### 🔐 Authentication & Login Flow
 
+- **Login & Signup Screen**
+
+<div align="center">
+  <img src="images/login-screen.png" alt="Login and Signup Screen" width="800"/>
+  <p><em>Authentication screen with login and sign-up tabs</em></p>
+</div>
+
 - **Loading Screen First**: On startup, users see a dynamic loading screen with a daily AI-generated tech fact.
 - **Login / Signup Screen**: After loading, users land on a dedicated authentication page with:
   - Separate **Login** and **Create Account** tabs
@@ -93,42 +100,56 @@
 - **Visual Indicators**: Color-coded gains/losses
 - **Formatted Data**: Easy-to-read number formatting (B, M, K)
 
----
+### 👤 User Accounts & Preferences
 
-## 🚀 Upcoming Features
+- **Account Menu & Settings**
 
-We're constantly working to improve TechScope Daily! Here's what's coming next:
+<div align="center">
+  <img src="images/account-menu.png" alt="Account menu with preferences and password options" width="800"/>
+  <p><em>Account dropdown to change news sources, companies, and password</em></p>
+</div>
 
-### 👤 Enhanced User Accounts & Settings
+- **Per-User Content Preferences**: Each user can choose their preferred tech news sources and companies to track.
+- **First-Time Onboarding**: On first login, a guided dialog walks users through selecting news sources and stocks; this is stored and not shown on later logins.
+- **In-App Account Settings**: From the account menu, users can adjust news sources, companies, and change their password.
+- **Planned Enhancements**: Roadmapped improvements include richer profiles, email updates, and device/session management controls.
 
-- **Richer Profiles**: Extended profile fields and preferences for each user (beyond the current news/source & company selections)
-- **Expanded Account Settings**: Additional in-app management including email updates and deeper profile customization (basic password change and content preferences already supported)
-- **Session Controls**: Device/session management and advanced security options
+**First-Time Preferences Dialog**
 
-### 📰 Personalized News Feed
+<div align="center">
+  <img src="images/first-login-preferences.png" alt="First-time preferences dialog" width="800"/>
+  <p><em>Onboarding dialog to pick preferred news sources and companies</em></p>
+</div>
 
-- **Custom News Preferences**: Users will be able to choose what types of news they want to focus on
-- **Topic Selection**: Select from categories like:
-  - Artificial Intelligence & Machine Learning
-  - Cybersecurity
-  - Startups & Funding
-  - Cloud Computing
-  - Mobile Technology
-  - Gaming & Entertainment Tech
-  - And more...
-- **Priority Viewing**: Your selected topics will appear first in your personalized feed
-- **News Filtering**: Filter news by category, source, date range, and importance
-- **Saved Articles**: Bookmark articles for later reading
-- **Reading History**: Track articles you've read
+**Adjusting Preferences In-App**
 
-### 📈 Custom Stock Tracking
+<div align="center">
+  <img src="images/change-news-sources.png" alt="Change news sources preferences" width="800"/>
+  <p><em>News-only preferences dialog opened from the account menu</em></p>
+</div>
 
-- **Personal Stock Watchlist**: Users can pick their favorite stocks and add them to a personal watchlist
-- **Custom Stock Selection**: Choose from any stock symbol, not just the default tech companies
-- **Portfolio Tracking**: Track multiple stocks in your personalized portfolio
-- **Stock Alerts**: Set up price alerts for your tracked stocks
-- **Performance Analytics**: View detailed analytics for your selected stocks
-- **Comparison Tools**: Compare performance across your selected stocks
+<div align="center">
+  <img src="images/change-companies.png" alt="Change companies preferences" width="800"/>
+  <p><em>Companies-only preferences dialog opened from the account menu</em></p>
+</div>
+
+**Change Password**
+
+<div align="center">
+  <img src="images/change-password.png" alt="Change password dialog" width="800"/>
+  <p><em>In-app change password modal for secure updates</em></p>
+</div>
+
+### 📰 Personalized News (Planned)
+
+- **Topic-Based Feed**: Planned ability to focus on categories like AI/ML, cybersecurity, startups, cloud, mobile, and more.
+- **Advanced Filtering**: Planned filtering by category, source, date range, and importance.
+- **Saving & History**: Planned saved articles and reading history to easily revisit content.
+
+### 📈 Custom Stock Tracking (Planned)
+
+- **Personal Watchlists**: Planned support for creating custom watchlists beyond the default tech companies.
+- **Alerts & Analytics**: Planned price alerts, portfolio-style tracking, and comparison/analytics tools for selected stocks.
 
 ---
 
