@@ -9,6 +9,8 @@ import StocksSection from './StocksSection';
 
 interface SlidingCardsProps {
   activeSection: 'news' | 'stocks';
+  selectedNewsSources: string[];
+  selectedStockSymbols: string[];
 }
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -110,6 +112,7 @@ interface NewsCard {
   id: number;
   title: string;
   content: string;
+  source?: string;
 }
 
 interface StockCard {
@@ -131,7 +134,11 @@ function isStockCard(card: any): card is StockCard {
   return 'symbol' in card && 'price' in card && 'change' in card;
 }
 
-const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
+const SlidingCards: React.FC<SlidingCardsProps> = ({
+  activeSection,
+  selectedNewsSources,
+  selectedStockSymbols,
+}) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -139,7 +146,7 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
   const [stockCards, setStockCards] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch news from backend
+  // Fetch news from backend (and apply source filtering)
   useEffect(() => {
     const fetchNews = async () => {
       try {
@@ -153,7 +160,7 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
         const regularNews = newsResponse.data.data || [];
         
         // Combine and format news
-        const formattedNews = [
+        let formattedNews = [
           ...breakingNews.map((item: any) => ({
             id: item.id,
             title: stripHtml(item.title || ''),
@@ -179,6 +186,13 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
             url: item.url
           }))
         ];
+
+        // Apply user-selected source filter if provided
+        if (selectedNewsSources && selectedNewsSources.length > 0) {
+          formattedNews = formattedNews.filter((item) =>
+            item.source && selectedNewsSources.includes(item.source)
+          );
+        }
         
         // If no news from API, use fallback
         if (formattedNews.length === 0) {
@@ -214,17 +228,17 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
     if (activeSection === 'news') {
       fetchNews();
     }
-  }, [activeSection]);
+  }, [activeSection, selectedNewsSources]);
 
-  // Fetch stocks from backend
+  // Fetch stocks from backend (and apply company filtering)
   useEffect(() => {
     const fetchStocks = async () => {
       try {
         setIsLoading(true);
         const response = await axios.get(`${API_BASE_URL}/api/stocks/daily`);
         const stocks = response.data.data || [];
-        
-        const formattedStocks = stocks.map((stock: any) => ({
+
+        let formattedStocks: StockCard[] = stocks.map((stock: any): StockCard => ({
           id: stock.id || stock.symbol,
           symbol: stock.symbol,
           price: stock.current_price || 0,
@@ -234,6 +248,13 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
           volume: stock.volume || 0,
           market_cap: stock.market_cap || 0
         }));
+
+        // Apply user-selected stock filter if provided
+        if (selectedStockSymbols && selectedStockSymbols.length > 0) {
+          formattedStocks = formattedStocks.filter((stock: StockCard) =>
+            selectedStockSymbols.includes(stock.symbol)
+          );
+        }
         
         if (formattedStocks.length === 0) {
           formattedStocks.push({
@@ -269,7 +290,7 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({ activeSection }) => {
     if (activeSection === 'stocks') {
       fetchStocks();
     }
-  }, [activeSection]);
+  }, [activeSection, selectedStockSymbols]);
 
   const cards = activeSection === 'news' ? newsCards : stockCards;
   const totalCards = cards.length;

@@ -25,11 +25,41 @@
 - 🤖 **AI-Powered**: Free AI integration for fact generation and content analysis
 - 📊 **Stock Tracking**: Real-time data for major tech companies
 - 🎨 **Modern UI**: Beautiful glassmorphism design with smooth animations
+- 🔐 **Login & Accounts**: Built-in signup/login with JWT auth and a ready-to-use test account
 - 🔄 **Auto-Rotating Cards**: Sliding card interface for easy browsing
 
 ---
 
 ## ✨ Features
+
+### 🔐 Authentication & Login Flow
+
+- **Login & Signup Screen**
+
+<div align="center">
+  <img src="images/login-screen.png" alt="Login and Signup Screen" width="800"/>
+  <p><em>Authentication screen with login and sign-up tabs</em></p>
+</div>
+
+- **Loading Screen First**: On startup, users see a dynamic loading screen with a daily AI-generated tech fact.
+- **Login / Signup Screen**: After loading, users land on a dedicated authentication page with:
+  - Separate **Login** and **Create Account** tabs
+  - Email, first name, last name, and password fields for signup
+  - Password visibility toggle (eye icon) for better UX
+- **Secure Authentication**: Backed by FastAPI + JWT; passwords are hashed before storage.
+- **Persistent Sessions**: Auth state and token are stored in the browser so users stay logged in across refreshes.
+- **Logout & Account Controls**: A prominent **Logout** button and an **Account** menu in the navbar (top-right, next to *News* and *Live Stocks*).
+- **First-Time Preferences**: On the very first login for a user, a one-time preferences dialog appears so they can choose:
+  - Which **tech news sources** to follow (Google News Tech, Wired, TechCrunch, etc.)
+  - Which **tech companies** to track in the stocks view
+  These preferences are saved per-user in the browser and are **not shown again** automatically on subsequent logins.
+- **In-App Account Settings**: From the account menu, users can:
+  - **Change news sources** (re-open the news-only preferences dialog)
+  - **Change companies** (re-open the stocks-only preferences dialog)
+  - **Change password** (via a secure in-app password change flow)
+- **Built-in Test User**:
+  - Email: `testuser@gmail.com`
+  - Password: `Password123!`
 
 ### 🧠 Daily Facts
 
@@ -70,43 +100,56 @@
 - **Visual Indicators**: Color-coded gains/losses
 - **Formatted Data**: Easy-to-read number formatting (B, M, K)
 
----
+### 👤 User Accounts & Preferences
 
-## 🚀 Upcoming Features
+- **Account Menu & Settings**
 
-We're constantly working to improve TechScope Daily! Here's what's coming next:
+<div align="center">
+  <img src="images/account-menu.png" alt="Account menu with preferences and password options" width="800"/>
+  <p><em>Account dropdown to change news sources, companies, and password</em></p>
+</div>
 
-### 👤 User Authentication & Accounts
+- **Per-User Content Preferences**: Each user can choose their preferred tech news sources and companies to track.
+- **First-Time Onboarding**: On first login, a guided dialog walks users through selecting news sources and stocks; this is stored and not shown on later logins.
+- **In-App Account Settings**: From the account menu, users can adjust news sources, companies, and change their password.
+- **Planned Enhancements**: Roadmapped improvements include richer profiles, email updates, and device/session management controls.
 
-- **Individual User Accounts**: Each user will be able to create their own account and login separately
-- **Secure Authentication**: JWT-based authentication system for secure user sessions
-- **Profile Management**: Users can customize their profiles, preferences, and settings
-- **Account Settings**: Full account management including password changes, email updates, and profile customization
+**First-Time Preferences Dialog**
 
-### 📰 Personalized News Feed
+<div align="center">
+  <img src="images/first-login-preferences.png" alt="First-time preferences dialog" width="800"/>
+  <p><em>Onboarding dialog to pick preferred news sources and companies</em></p>
+</div>
 
-- **Custom News Preferences**: Users will be able to choose what types of news they want to focus on
-- **Topic Selection**: Select from categories like:
-  - Artificial Intelligence & Machine Learning
-  - Cybersecurity
-  - Startups & Funding
-  - Cloud Computing
-  - Mobile Technology
-  - Gaming & Entertainment Tech
-  - And more...
-- **Priority Viewing**: Your selected topics will appear first in your personalized feed
-- **News Filtering**: Filter news by category, source, date range, and importance
-- **Saved Articles**: Bookmark articles for later reading
-- **Reading History**: Track articles you've read
+**Adjusting Preferences In-App**
 
-### 📈 Custom Stock Tracking
+<div align="center">
+  <img src="images/change-news-sources.png" alt="Change news sources preferences" width="800"/>
+  <p><em>News-only preferences dialog opened from the account menu</em></p>
+</div>
 
-- **Personal Stock Watchlist**: Users can pick their favorite stocks and add them to a personal watchlist
-- **Custom Stock Selection**: Choose from any stock symbol, not just the default tech companies
-- **Portfolio Tracking**: Track multiple stocks in your personalized portfolio
-- **Stock Alerts**: Set up price alerts for your tracked stocks
-- **Performance Analytics**: View detailed analytics for your selected stocks
-- **Comparison Tools**: Compare performance across your selected stocks
+<div align="center">
+  <img src="images/change-companies.png" alt="Change companies preferences" width="800"/>
+  <p><em>Companies-only preferences dialog opened from the account menu</em></p>
+</div>
+
+**Change Password**
+
+<div align="center">
+  <img src="images/change-password.png" alt="Change password dialog" width="800"/>
+  <p><em>In-app change password modal for secure updates</em></p>
+</div>
+
+### 📰 Personalized News (Planned)
+
+- **Topic-Based Feed**: Planned ability to focus on categories like AI/ML, cybersecurity, startups, cloud, mobile, and more.
+- **Advanced Filtering**: Planned filtering by category, source, date range, and importance.
+- **Saving & History**: Planned saved articles and reading history to easily revisit content.
+
+### 📈 Custom Stock Tracking (Planned)
+
+- **Personal Watchlists**: Planned support for creating custom watchlists beyond the default tech companies.
+- **Alerts & Analytics**: Planned price alerts, portfolio-style tracking, and comparison/analytics tools for selected stocks.
 
 ---
 
@@ -142,42 +185,50 @@ TechScope Daily/
 ├── backend/
 │   ├── app/
 │   │   ├── ai/
-│   │   │   └── content_generator.py    # AI fact generation & news analysis
+│   │   │   └── content_generator.py      # AI fact generation & news analysis
 │   │   ├── api/
 │   │   │   └── routes/
-│   │   │       ├── news.py            # News endpoints
-│   │   │       ├── breaking_news.py   # Breaking news endpoints
-│   │   │       ├── stocks.py          # Stock endpoints
-│   │   │       └── facts.py            # Daily facts endpoints
+│   │   │       ├── auth.py              # Authentication (signup, login, current user)
+│   │   │       ├── news.py              # News endpoints
+│   │   │       ├── breaking_news.py     # Breaking news endpoints
+│   │   │       ├── stocks.py            # Stock endpoints
+│   │   │       └── facts.py             # Daily facts endpoints
 │   │   ├── core/
-│   │   │   └── config.py              # Configuration & settings
+│   │   │   ├── config.py                # Configuration & settings
+│   │   │   └── security.py              # Password hashing & JWT helpers
 │   │   ├── models/
-│   │   │   └── database.py             # Database models
+│   │   │   └── database.py              # Database models (including User)
 │   │   └── services/
-│   │       ├── news_service.py         # News business logic
+│   │       ├── news_service.py          # News business logic
 │   │       ├── breaking_news_service.py # Breaking news fetching
-│   │       ├── stock_service.py        # Stock data management
-│   │       └── scheduler.py            # Daily task scheduler
-│   ├── main.py                         # FastAPI app entry point
+│   │       ├── stock_service.py         # Stock data management
+│   │       └── scheduler.py             # Daily task scheduler
+│   ├── main.py                          # FastAPI app entry point (includes test user creation)
+│   ├── create_test_user.py              # One-off script to create the test user (optional)
 │   ├── requirements.txt                 # Python dependencies
-│   └── techscope_daily.db              # SQLite database
+│   └── techscope_daily.db               # SQLite database
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Header.tsx              # Navigation header
-│   │   │   ├── SlidingCards.tsx        # Card carousel container
-│   │   │   ├── NewsSection.tsx         # News card component
-│   │   │   ├── StocksSection.tsx       # Stock card component
-│   │   │   └── LoadingSpinner.tsx      # Loading screen with facts
-│   │   ├── App.tsx                     # Main app component
-│   │   ├── index.tsx                   # React entry point
-│   │   └── index.css                   # Global styles
-│   ├── package.json                    # Node.js dependencies
-│   └── build/                          # Production build
+│   │   │   ├── Header.tsx               # Navigation header (tabs, account menu, logout)
+│   │   │   ├── LoginPage.tsx            # Login & signup UI with password visibility toggle
+│   │   │   ├── SlidingCards.tsx         # Card carousel container
+│   │   │   ├── NewsSection.tsx          # News card component
+│   │   │   ├── StocksSection.tsx        # Stock card component
+│   │   │   ├── LoadingSpinner.tsx       # Loading screen with facts
+│   │   │   ├── PreferencesModal.tsx     # First-time and in-app selection of news sources & companies
+│   │   │   └── ChangePasswordModal.tsx  # In-app password change dialog
+│   │   ├── contexts/
+│   │   │   └── AuthContext.tsx          # Global auth state (user, token, login, signup, logout)
+│   │   ├── App.tsx                      # Main app component & routing (loading → login → app)
+│   │   ├── index.tsx                    # React entry point
+│   │   └── index.css                    # Global styles
+│   ├── package.json                     # Node.js dependencies
+│   └── build/                           # Production build
 │
-├── README.md                            # This file
-└── setup.md                             # Detailed setup guide
+├── README.md                             # This file
+└── setup.md                              # Detailed setup guide
 ```
 
 ---
@@ -276,6 +327,15 @@ The frontend will be available at: **http://localhost:3000**
 - **Backend API**: http://localhost:8000
 - **API Documentation (Swagger)**: http://localhost:8000/docs
 - **Alternative API Docs (ReDoc)**: http://localhost:8000/redoc
+
+### Default Login / Test Account
+
+- After both servers are running, open the frontend and wait for the loading screen to finish.
+- You will be redirected to the **Login / Signup** page.
+- You can either create a new account or use the built-in test user:
+  - Email: `testuser@gmail.com`
+  - Password: `Password123!`
+- Once logged in, you can navigate between **News** and **Live Stocks** and log out using the navbar button.
 
 ---
 
