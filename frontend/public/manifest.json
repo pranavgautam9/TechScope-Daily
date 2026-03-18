@@ -1,0 +1,12 @@
+{
+  "short_name": "TechScope",
+  "name": "TechScope Daily",
+  "description": "AI-Powered TechScope Daily - Daily tech news, facts, and stock updates",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#667eea",
+  "background_color": "#667eea",
+  "icons": []
+}
+
+

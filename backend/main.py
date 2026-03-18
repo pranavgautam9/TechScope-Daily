@@ -4,21 +4,28 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import uvicorn
+from sqlalchemy import func
 
 from app.api.routes import news, facts, stocks, breaking_news, auth
 from app.core.config import settings
 from app.services.scheduler import start_breaking_news_scheduler
 from app.models.database import SessionLocal, User
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password
 
 def create_test_user_if_not_exists():
     """Create test user if it doesn't exist"""
     db = SessionLocal()
     try:
         # Check if user already exists
-        existing_user = db.query(User).filter(User.email == "testuser@gmail.com").first()
+        existing_user = db.query(User).filter(func.lower(User.email) == "testuser@gmail.com").first()
         if existing_user:
-            print("Test user already exists!")
+            # If the test user exists but the password differs, reset it to the known value
+            # so production login works reliably for demos.
+            if not verify_password("Password123!", existing_user.hashed_password):
+                existing_user.hashed_password = get_password_hash("Password123!")
+                db.add(existing_user)
+                db.commit()
+                print("Test user existed but password mismatch; reset to Password123!")
             return
         
         # Create test user

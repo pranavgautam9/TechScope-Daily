@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from pydantic import BaseModel, EmailStr
 from datetime import timedelta
 
@@ -70,8 +71,11 @@ async def get_current_user(
 @router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def signup(user_data: UserSignup, db: Session = Depends(get_db)):
     """Create a new user account"""
-    # Check if user already exists
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    # Normalize email to avoid case-sensitive "not found" issues.
+    normalized_email = user_data.email.lower()
+
+    # Check if user already exists (case-insensitive).
+    existing_user = db.query(User).filter(func.lower(User.email) == normalized_email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -81,7 +85,7 @@ async def signup(user_data: UserSignup, db: Session = Depends(get_db)):
     # Create new user
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
-        email=user_data.email,
+        email=normalized_email,
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         hashed_password=hashed_password
@@ -112,8 +116,11 @@ async def signup(user_data: UserSignup, db: Session = Depends(get_db)):
 @router.post("/login", response_model=TokenResponse)
 async def login(login_data: UserLogin, db: Session = Depends(get_db)):
     """Login with email and password"""
+    # Normalize email to avoid case-sensitive "not found" issues.
+    normalized_email = login_data.email.lower()
+
     # Find user by email
-    user = db.query(User).filter(User.email == login_data.email).first()
+    user = db.query(User).filter(func.lower(User.email) == normalized_email).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
