@@ -31,10 +31,20 @@ class Settings(BaseSettings):
         """Parse CORS origins from environment variable or use default list"""
         cors_env = os.getenv("BACKEND_CORS_ORIGINS") or self.BACKEND_CORS_ORIGINS
         if cors_env:
-            # Split by comma and strip whitespace
-            return [origin.strip() for origin in cors_env.split(",")]
+            # Split by comma, trim whitespace, and remove trailing slash.
+            # This avoids common deployment config mistakes that cause CORS mismatch.
+            return [
+                origin.strip().rstrip("/")
+                for origin in cors_env.split(",")
+                if origin.strip()
+            ]
         # Default origins if not set
-        return ["http://localhost:3000", "http://127.0.0.1:3000"]
+        return [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "https://pranavgautam.com",
+            "https://www.pranavgautam.com",
+        ]
     
     # Security
     SECRET_KEY: str = "your-secret-key-here"
