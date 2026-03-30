@@ -16,16 +16,18 @@ def create_test_user_if_not_exists():
     """Create test user if it doesn't exist"""
     db = SessionLocal()
     try:
-        # Check if user already exists
-        existing_user = db.query(User).filter(func.lower(User.email) == "testuser@gmail.com").first()
+        # Case-insensitive match so legacy rows (mixed-case email) still get normalized + password fix.
+        existing_user = db.query(User).filter(
+            func.lower(User.email) == "testuser@gmail.com"
+        ).first()
         if existing_user:
-            # If the test user exists but the password differs, reset it to the known value
-            # so production login works reliably for demos.
+            if existing_user.email != "testuser@gmail.com":
+                existing_user.email = "testuser@gmail.com"
             if not verify_password("Password123!", existing_user.hashed_password):
                 existing_user.hashed_password = get_password_hash("Password123!")
-                db.add(existing_user)
-                db.commit()
                 print("Test user existed but password mismatch; reset to Password123!")
+            db.add(existing_user)
+            db.commit()
             return
         
         # Create test user

@@ -58,10 +58,14 @@ async def get_current_user(
     if payload is None:
         raise credentials_exception
     
-    user_id: int = payload.get("sub")
-    if user_id is None:
+    sub = payload.get("sub")
+    if sub is None:
         raise credentials_exception
-    
+    try:
+        user_id = int(sub)
+    except (TypeError, ValueError):
+        raise credentials_exception
+
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise credentials_exception
@@ -72,7 +76,8 @@ async def get_current_user(
 async def signup(user_data: UserSignup, db: Session = Depends(get_db)):
     """Create a new user account"""
     # Normalize email to avoid case-sensitive "not found" issues.
-    normalized_email = user_data.email.lower()
+    normalized_email = user_data.email.strip().lower()
+    password = user_data.password.strip()
 
     # Check if user already exists (case-insensitive).
     existing_user = db.query(User).filter(func.lower(User.email) == normalized_email).first()
@@ -83,7 +88,7 @@ async def signup(user_data: UserSignup, db: Session = Depends(get_db)):
         )
     
     # Create new user
-    hashed_password = get_password_hash(user_data.password)
+    hashed_password = get_password_hash(password)
     new_user = User(
         email=normalized_email,
         first_name=user_data.first_name,
@@ -98,7 +103,7 @@ async def signup(user_data: UserSignup, db: Session = Depends(get_db)):
     # Create access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": new_user.id},
+        data={"sub": str(new_user.id)},
         expires_delta=access_token_expires
     )
     
@@ -117,7 +122,8 @@ async def signup(user_data: UserSignup, db: Session = Depends(get_db)):
 async def login(login_data: UserLogin, db: Session = Depends(get_db)):
     """Login with email and password"""
     # Normalize email to avoid case-sensitive "not found" issues.
-    normalized_email = login_data.email.lower()
+    normalized_email = login_data.email.strip().lower()
+    password = login_data.password.strip()
 
     # Find user by email
     user = db.query(User).filter(func.lower(User.email) == normalized_email).first()
@@ -128,7 +134,7 @@ async def login(login_data: UserLogin, db: Session = Depends(get_db)):
         )
     
     # Verify password
-    if not verify_password(login_data.password, user.hashed_password):
+    if not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"
@@ -137,7 +143,7 @@ async def login(login_data: UserLogin, db: Session = Depends(get_db)):
     # Create access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.id},
+        data={"sub": str(user.id)},
         expires_delta=access_token_expires
     )
     

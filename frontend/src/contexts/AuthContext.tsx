@@ -49,8 +49,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Login failed');
+        let message = 'Login failed';
+        try {
+          const error = await response.json();
+          const d = error.detail;
+          message =
+            typeof d === 'string'
+              ? d
+              : Array.isArray(d) && d[0]?.msg
+                ? d[0].msg
+                : message;
+        } catch {
+          message = response.statusText || message;
+        }
+        throw new Error(message);
       }
 
       const data = await response.json();
@@ -80,8 +92,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Signup failed');
+        let message = 'Signup failed';
+        try {
+          const error = await response.json();
+          const d = error.detail;
+          message =
+            typeof d === 'string'
+              ? d
+              : Array.isArray(d) && d[0]?.msg
+                ? d[0].msg
+                : message;
+        } catch {
+          message = response.statusText || message;
+        }
+        throw new Error(message);
       }
 
       const data = await response.json();

@@ -1,11 +1,34 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Float, Boolean
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text, create_engine, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+
 from app.core.config import settings
 
-# Database setup
-engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
+
+def _create_engine():
+    url = settings.DATABASE_URL
+    # check_same_thread is SQLite-only; passing it to PostgreSQL drivers breaks startup.
+    if url.startswith("sqlite"):
+        return create_engine(
+            url,
+            connect_args={"check_same_thread": False, "timeout": 30},
+        )
+    return create_engine(url, pool_pre_ping=True)
+
+
+engine = _create_engine()
+
+if engine.dialect.name == "sqlite":
+
+    @event.listens_for(engine, "connect")
+    def _sqlite_pragmas(dbapi_connection, _connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.close()
+
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

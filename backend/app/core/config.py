@@ -1,6 +1,14 @@
-from pydantic_settings import BaseSettings
+from pathlib import Path
 from typing import Optional
 import os
+
+from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
+
+# Load .env before Settings() so DATABASE_URL, CORS, SECRET_KEY, etc. apply.
+_backend_root = Path(__file__).resolve().parents[2]
+load_dotenv(_backend_root / ".env")
+
 
 class Settings(BaseSettings):
     # API Configuration
@@ -28,35 +36,42 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: Optional[str] = None
     
     def get_cors_origins(self):
-        """Parse CORS origins from environment variable or use default list"""
-        cors_env = os.getenv("BACKEND_CORS_ORIGINS") or self.BACKEND_CORS_ORIGINS
-        if cors_env:
-            # Split by comma, trim whitespace, and remove trailing slash.
-            # This avoids common deployment config mistakes that cause CORS mismatch.
-            return [
-                origin.strip().rstrip("/")
-                for origin in cors_env.split(",")
-                if origin.strip()
-            ]
-        # Default origins if not set
-        return [
+        """Allowed browser origins. Merges BACKEND_CORS_ORIGINS with safe defaults.
+
+        If the env var is set but parses to an empty list (e.g. commas only), defaults
+        are used so production is not accidentally locked to no origins.
+        """
+        defaults = [
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "https://pranavgautam.com",
             "https://www.pranavgautam.com",
         ]
+        cors_env = os.getenv("BACKEND_CORS_ORIGINS") or self.BACKEND_CORS_ORIGINS
+        if not cors_env or not str(cors_env).strip():
+            return defaults
+        extra = [
+            origin.strip().rstrip("/")
+            for origin in str(cors_env).split(",")
+            if origin.strip()
+        ]
+        if not extra:
+            return defaults
+        seen = set()
+        merged = []
+        for origin in defaults + extra:
+            if origin not in seen:
+                seen.add(origin)
+                merged.append(origin)
+        return merged
     
     # Security
     SECRET_KEY: str = "your-secret-key-here"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
     class Config:
-        env_file = ".env"
+        env_file = str(_backend_root / ".env")
+        env_file_encoding = "utf-8"
         case_sensitive = True
 
 settings = Settings()
-
-# Load environment variables from .env file if it exists
-if os.path.exists(".env"):
-    from dotenv import load_dotenv
-    load_dotenv() 
