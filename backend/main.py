@@ -1,9 +1,15 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exception_handlers import (
+    http_exception_handler,
+    request_validation_exception_handler,
+)
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+import logging
 import uvicorn
+from typing import Optional
 from sqlalchemy import func
 
 from app.api.routes import news, facts, stocks, breaking_news, auth
@@ -11,6 +17,17 @@ from app.core.config import settings
 from app.services.scheduler import start_breaking_news_scheduler
 from app.models.database import SessionLocal, User
 from app.core.security import get_password_hash, verify_password
+
+
+def _password_matches(plain: str, hashed: Optional[str]) -> bool:
+    """Avoid startup failure if stored hash is corrupt or uses an unexpected format."""
+    if not hashed:
+        return False
+    try:
+        return verify_password(plain, hashed)
+    except Exception:
+        return False
+
 
 def create_test_user_if_not_exists():
     """Create test user if it doesn't exist"""
@@ -23,7 +40,7 @@ def create_test_user_if_not_exists():
         if existing_user:
             if existing_user.email != "testuser@gmail.com":
                 existing_user.email = "testuser@gmail.com"
-            if not verify_password("Password123!", existing_user.hashed_password):
+            if not _password_matches("Password123!", existing_user.hashed_password):
                 existing_user.hashed_password = get_password_hash("Password123!")
                 print("Test user existed but password mismatch; reset to Password123!")
             db.add(existing_user)
@@ -75,6 +92,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Ensure API errors return JSON and CORS headers (plain500s confuse browsers)."""
+    if isinstance(exc, HTTPException):
+        return await http_exception_handler(request, exc)
+    if isinstance(exc, RequestValidationError):
+        return await request_validation_exception_handler(request, exc)
+    logging.exception("Unhandled error: %s", exc)
+    origin = request.headers.get("origin")
+    headers = {}
+    if origin and origin.rstrip("/") in {o.rstrip("/") for o in cors_origins}:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+        headers=headers,
+    )
+
 
 # Include API routes
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])

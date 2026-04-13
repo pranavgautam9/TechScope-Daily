@@ -7,8 +7,15 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
 
+def _normalize_database_url(url: str) -> str:
+    """Render/Heroku often provide postgres://; SQLAlchemy 2.x requires postgresql://."""
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql://", 1)
+    return url
+
+
 def _create_engine():
-    url = settings.DATABASE_URL
+    url = _normalize_database_url(settings.DATABASE_URL)
     # check_same_thread is SQLite-only; passing it to PostgreSQL drivers breaks startup.
     if url.startswith("sqlite"):
         return create_engine(
