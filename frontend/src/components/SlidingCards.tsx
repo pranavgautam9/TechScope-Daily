@@ -126,6 +126,17 @@ interface StockCard {
   market_cap?: number;
 }
 
+const normalizeStockSymbol = (value: string): string => {
+  const trimmed = (value || '').trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  const parenMatch = trimmed.match(/\(([A-Za-z.-]+)\)/);
+  const candidate = parenMatch ? parenMatch[1] : trimmed;
+  return candidate.toUpperCase();
+};
+
 function isNewsCard(card: any): card is NewsCard {
   return 'title' in card && 'content' in card;
 }
@@ -251,8 +262,14 @@ const SlidingCards: React.FC<SlidingCardsProps> = ({
 
         // Apply user-selected stock filter if provided
         if (selectedStockSymbols && selectedStockSymbols.length > 0) {
+          const selectedSet = new Set(
+            selectedStockSymbols
+              .map(normalizeStockSymbol)
+              .filter(Boolean)
+          );
+
           formattedStocks = formattedStocks.filter((stock: StockCard) =>
-            selectedStockSymbols.includes(stock.symbol)
+            selectedSet.has(normalizeStockSymbol(stock.symbol))
           );
         }
         
