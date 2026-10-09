@@ -8,6 +8,9 @@
 [![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+[Live App](https://pranavgautam.com/TechScope-Daily) · [API Docs](http://localhost:8000/docs) · [Repository](https://github.com/pranavgautam9/TechScope-Daily)
 
 *Stay informed with the latest tech news, stock updates, and AI-generated insights*
 
@@ -17,16 +20,19 @@
 
 ## 🎯 Overview
 
-**TechScope Daily** is a modern, AI-powered tech news platform that delivers personalized daily tech insights, breaking news, market updates, and fascinating tech facts. Built with FastAPI and React, it provides a beautiful, responsive interface for staying up-to-date with the tech world.
+**TechScope Daily** is a modern, AI-powered tech news platform that delivers personalized daily tech insights, breaking news, market updates, and fascinating tech facts. The frontend is a React + TypeScript app; the backend is FastAPI with JWT auth, RSS news ingestion, yfinance stock data, and Hugging Face-backed fact generation.
+
+The production frontend is deployed to GitHub Pages at [pranavgautam.com/TechScope-Daily](https://pranavgautam.com/TechScope-Daily). Locally you can run both servers and use SQLite; production can use PostgreSQL via `DATABASE_URL`.
 
 ### Key Highlights
 
-- ✨ **Daily Updates**: Fresh content every day - news, stocks, and facts
-- 🤖 **AI-Powered**: Free AI integration for fact generation and content analysis
-- 📊 **Stock Tracking**: Real-time data for major tech companies
-- 🎨 **Modern UI**: Beautiful glassmorphism design with smooth animations
-- 🔐 **Login & Accounts**: Built-in signup/login with JWT auth and a ready-to-use test account
-- 🔄 **Auto-Rotating Cards**: Sliding card interface for easy browsing
+- ✨ **Daily Updates**: Fresh news, stocks, and facts on a background scheduler
+- 🤖 **AI-Powered**: Hugging Face for daily facts plus sentiment/impact analysis on news
+- 📊 **Stock Tracking**: Live Yahoo Finance data for 10 major tech companies
+- 🗞️ **10 News Sources**: Google News Tech, Wired, TechCrunch, The Verge, Ars Technica, Engadget, MIT Technology Review, CNET, VentureBeat, and TechRepublic
+- 🎨 **Modern UI**: Glassmorphism design with auto-rotating cards
+- 🔐 **Accounts**: Signup/login with JWT, bcrypt password hashing, and a built-in test account
+- 🎛️ **Personalization**: Per-user news sources and companies, saved in the browser
 
 ---
 
@@ -45,19 +51,20 @@
 - **Login / Signup Screen**: After loading, users land on a dedicated authentication page with:
   - Separate **Login** and **Create Account** tabs
   - Email, first name, last name, and password fields for signup
-  - Password visibility toggle (eye icon) for better UX
-- **Secure Authentication**: Backed by FastAPI + JWT; passwords are hashed before storage.
+  - Password visibility toggle (eye icon)
+  - Case-insensitive email matching so login is not blocked by capitalization
+- **Secure Authentication**: FastAPI + JWT (`python-jose`); passwords hashed with bcrypt.
 - **Persistent Sessions**: Auth state and token are stored in the browser so users stay logged in across refreshes.
-- **Logout & Account Controls**: A prominent **Logout** button and an **Account** menu in the navbar (top-right, next to *News* and *Live Stocks*).
-- **First-Time Preferences**: On the very first login for a user, a one-time preferences dialog appears so they can choose:
-  - Which **tech news sources** to follow (Google News Tech, Wired, TechCrunch, etc.)
+- **Logout & Account Controls**: A **Logout** button and an **Account** menu in the navbar (top-right, next to *News* and *Live Stocks*).
+- **First-Time Preferences**: On the first login for a user, a one-time preferences dialog appears so they can choose:
+  - Which **tech news sources** to follow
   - Which **tech companies** to track in the stocks view
   These preferences are saved per-user in the browser and are **not shown again** automatically on subsequent logins.
 - **In-App Account Settings**: From the account menu, users can:
-  - **Change news sources** (re-open the news-only preferences dialog)
-  - **Change companies** (re-open the stocks-only preferences dialog)
-  - **Change password** (via a secure in-app password change flow)
-- **Built-in Test User**:
+  - **Change news sources**
+  - **Change companies**
+  - **Change password**
+- **Built-in Test User** (created automatically on backend startup):
   - Email: `testuser@gmail.com`
   - Password: `Password123!`
 
@@ -68,11 +75,10 @@
   <p><em>Loading screen displaying daily tech fact</em></p>
 </div>
 
-- **AI-Generated Facts**: Unique tech facts generated daily
+- **AI-Generated Facts**: Unique tech facts generated daily (Hugging Face, with a local fallback catalog)
 - **Loading Screen Display**: Facts shown during app startup
-- **Daily Rotation**: New fact every day at midnight
-- **Free AI Integration**: Uses Hugging Face API (no API key required)
-- **Fallback Database**: 30+ facts per category for reliability
+- **Daily Rotation**: New fact every day at midnight (scheduler) or on first request if none exists yet
+- **No API Key Required**: Uses the public Hugging Face Inference API by default
 
 ### 📰 News Section
 
@@ -81,11 +87,28 @@
   <p><em>News feed with article cards and impact scoring</em></p>
 </div>
 
-- **Daily Tech News**: Curated news from Google News and Wired.com
-- **Breaking News Alerts**: Real-time breaking news with importance scoring
-- **AI Analysis**: Automatic sentiment and impact analysis
-- **Content Extraction**: Full article content previews
-- **Source Filtering**: Focused on quality tech sources
+- **Curated Tech News**: RSS feeds from 10 quality tech sources
+- **Breaking News Alerts**: Trending/breaking items with importance scoring
+- **AI Analysis**: Sentiment (`positive` / `negative` / `neutral`) and impact (`high` / `medium` / `low`)
+- **Content Extraction**: Article previews with a link to the full story
+- **Personalized Sources**: The feed is filtered to the sources each user selected
+
+**Sources**
+
+| Source | Feed |
+|--------|------|
+| Google News (Tech) | Google News RSS |
+| Wired | wired.com |
+| TechCrunch | techcrunch.com |
+| The Verge | theverge.com |
+| Ars Technica | arstechnica.com |
+| Engadget | engadget.com |
+| MIT Technology Review | technologyreview.com |
+| CNET | cnet.com |
+| VentureBeat | venturebeat.com |
+| TechRepublic | techrepublic.com |
+
+News is fetched on backend startup, at 6:00 AM, at noon, and every 2 hours.
 
 ### 📈 Stocks Section
 
@@ -94,11 +117,11 @@
   <p><em>Stock tracking with real-time data and metrics</em></p>
 </div>
 
-- **Major Tech Stocks**: Track 10 major tech companies (AAPL, MSFT, GOOGL, AMZN, TSLA, META, NVDA, NFLX, ADBE, CRM)
-- **Daily Updates**: Stock data refreshed daily at market open
-- **Real-time Metrics**: Price, change, volume, and market cap
-- **Visual Indicators**: Color-coded gains/losses
-- **Formatted Data**: Easy-to-read number formatting (B, M, K)
+- **Major Tech Stocks**: AAPL, MSFT, GOOGL, AMZN, TSLA, META, NVDA, NFLX, ADBE, CRM
+- **Yahoo Finance**: Prices via `yfinance` (no Alpha Vantage key required)
+- **Daily Refresh**: Scheduler updates stocks at 9:00 AM (market open) and on backend startup
+- **Metrics**: Price, change, volume, and market cap with color-coded gains/losses
+- **Personalized Watchlist**: Cards are filtered to the companies each user selected
 
 ### 👤 User Accounts & Preferences
 
@@ -109,10 +132,9 @@
   <p><em>Account dropdown to change news sources, companies, and password</em></p>
 </div>
 
-- **Per-User Content Preferences**: Each user can choose their preferred tech news sources and companies to track.
-- **First-Time Onboarding**: On first login, a guided dialog walks users through selecting news sources and stocks; this is stored and not shown on later logins.
+- **Per-User Content Preferences**: Each user chooses preferred news sources and companies.
+- **First-Time Onboarding**: On first login, a guided dialog walks users through selecting news sources and stocks.
 - **In-App Account Settings**: From the account menu, users can adjust news sources, companies, and change their password.
-- **Planned Enhancements**: Roadmapped improvements include richer profiles, email updates, and device/session management controls.
 
 **First-Time Preferences Dialog**
 
@@ -140,16 +162,13 @@
   <p><em>In-app change password modal for secure updates</em></p>
 </div>
 
-### 📰 Personalized News (Planned)
+### 🗺️ Roadmap
 
-- **Topic-Based Feed**: Planned ability to focus on categories like AI/ML, cybersecurity, startups, cloud, mobile, and more.
-- **Advanced Filtering**: Planned filtering by category, source, date range, and importance.
-- **Saving & History**: Planned saved articles and reading history to easily revisit content.
-
-### 📈 Custom Stock Tracking (Planned)
-
-- **Personal Watchlists**: Planned support for creating custom watchlists beyond the default tech companies.
-- **Alerts & Analytics**: Planned price alerts, portfolio-style tracking, and comparison/analytics tools for selected stocks.
+- Topic-based feeds (AI/ML, cybersecurity, startups, cloud, and more)
+- Filtering by date range and importance
+- Saved articles and reading history
+- Custom watchlists beyond the default 10 companies
+- Price alerts and richer stock analytics
 
 ---
 
@@ -158,23 +177,31 @@
 ### Backend
 | Technology | Purpose |
 |------------|---------|
-| **FastAPI** | Modern Python web framework |
-| **SQLAlchemy** | Database ORM |
-| **SQLite** | Lightweight database |
+| **FastAPI** | Python API |
+| **SQLAlchemy** | ORM |
+| **SQLite / PostgreSQL** | Local SQLite; PostgreSQL in production via `DATABASE_URL` |
 | **yfinance** | Stock market data |
-| **BeautifulSoup4** | Web scraping for news |
-| **Hugging Face API** | Free AI for fact generation |
-| **Schedule** | Background task scheduling |
+| **BeautifulSoup4 + lxml** | RSS parsing and article extraction |
+| **Hugging Face API** | Daily fact generation |
+| **bcrypt + python-jose** | Password hashing and JWT |
+| **Schedule** | Background jobs (facts, news, stocks) |
 
 ### Frontend
 | Technology | Purpose |
 |------------|---------|
-| **React 18** | UI framework |
+| **React 18** | UI |
 | **TypeScript** | Type safety |
-| **Styled Components** | CSS-in-JS styling |
+| **Styled Components** | CSS-in-JS |
 | **Framer Motion** | Animations |
-| **React Icons** | Icon library |
+| **React Icons** | Icons |
 | **Axios** | HTTP client |
+| **react-hot-toast** | Toasts |
+
+### Deploy
+| Technology | Purpose |
+|------------|---------|
+| **GitHub Pages** | Hosted frontend (`https://pranavgautam.com/TechScope-Daily`) |
+| **GitHub Actions** | Build and deploy on push to `main` |
 
 ---
 
@@ -185,50 +212,52 @@ TechScope Daily/
 ├── backend/
 │   ├── app/
 │   │   ├── ai/
-│   │   │   └── content_generator.py      # AI fact generation & news analysis
+│   │   │   └── content_generator.py      # AI facts & news analysis
 │   │   ├── api/
 │   │   │   └── routes/
-│   │   │       ├── auth.py              # Authentication (signup, login, current user)
+│   │   │       ├── auth.py              # Signup, login, current user, change password
 │   │   │       ├── news.py              # News endpoints
 │   │   │       ├── breaking_news.py     # Breaking news endpoints
 │   │   │       ├── stocks.py            # Stock endpoints
 │   │   │       └── facts.py             # Daily facts endpoints
 │   │   ├── core/
-│   │   │   ├── config.py                # Configuration & settings
-│   │   │   └── security.py              # Password hashing & JWT helpers
+│   │   │   ├── config.py                # Settings, CORS, DATABASE_URL
+│   │   │   └── security.py              # bcrypt hashing & JWT helpers
 │   │   ├── models/
-│   │   │   └── database.py              # Database models (including User)
+│   │   │   └── database.py              # Models (User, News, BreakingNews, Stock, Fact)
 │   │   └── services/
-│   │       ├── news_service.py          # News business logic
-│   │       ├── breaking_news_service.py # Breaking news fetching
-│   │       ├── stock_service.py         # Stock data management
-│   │       └── scheduler.py             # Daily task scheduler
-│   ├── main.py                          # FastAPI app entry point (includes test user creation)
-│   ├── create_test_user.py              # One-off script to create the test user (optional)
-│   ├── requirements.txt                 # Python dependencies
-│   └── techscope_daily.db               # SQLite database
+│   │       ├── news_service.py          # News queries
+│   │       ├── breaking_news_service.py # RSS fetch from 10 sources
+│   │       ├── stock_service.py         # yfinance updates
+│   │       └── scheduler.py             # Daily/hourly background jobs
+│   ├── main.py                          # FastAPI app (test user + scheduler on startup)
+│   ├── create_test_user.py              # Optional one-off test user script
+│   └── requirements.txt
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Header.tsx               # Navigation header (tabs, account menu, logout)
-│   │   │   ├── LoginPage.tsx            # Login & signup UI with password visibility toggle
-│   │   │   ├── SlidingCards.tsx         # Card carousel container
-│   │   │   ├── NewsSection.tsx          # News card component
-│   │   │   ├── StocksSection.tsx        # Stock card component
-│   │   │   ├── LoadingSpinner.tsx       # Loading screen with facts
-│   │   │   ├── PreferencesModal.tsx     # First-time and in-app selection of news sources & companies
-│   │   │   └── ChangePasswordModal.tsx  # In-app password change dialog
+│   │   │   ├── Header.tsx               # Nav, account menu, logout
+│   │   │   ├── LoginPage.tsx            # Login & signup
+│   │   │   ├── SlidingCards.tsx         # Card carousel
+│   │   │   ├── NewsSection.tsx          # News cards
+│   │   │   ├── StocksSection.tsx        # Stock cards
+│   │   │   ├── FactsSection.tsx         # Fact card UI
+│   │   │   ├── LoadingSpinner.tsx       # Loading screen with daily fact
+│   │   │   ├── PreferencesModal.tsx     # News sources & companies
+│   │   │   └── ChangePasswordModal.tsx  # Password change
 │   │   ├── contexts/
-│   │   │   └── AuthContext.tsx          # Global auth state (user, token, login, signup, logout)
-│   │   ├── App.tsx                      # Main app component & routing (loading → login → app)
-│   │   ├── index.tsx                    # React entry point
-│   │   └── index.css                    # Global styles
-│   ├── package.json                     # Node.js dependencies
-│   └── build/                           # Production build
+│   │   │   └── AuthContext.tsx          # Auth state; talks to REACT_APP_API_URL
+│   │   ├── App.tsx
+│   │   ├── index.tsx
+│   │   └── index.css
+│   └── package.json
 │
-├── README.md                             # This file
-└── setup.md                              # Detailed setup guide
+├── .github/workflows/deploy.yml          # GitHub Pages deploy
+├── images/                               # README screenshots
+├── LICENSE
+├── README.md
+└── setup.md
 ```
 
 ---
@@ -246,8 +275,8 @@ TechScope Daily/
 #### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd "TechScope Daily"
+git clone https://github.com/pranavgautam9/TechScope-Daily.git
+cd TechScope-Daily
 ```
 
 #### 2. Backend Setup
@@ -262,42 +291,53 @@ venv\Scripts\activate
 # macOS/Linux:
 source venv/bin/activate
 
-# Navigate to backend
 cd backend
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Initialize database (creates tables automatically on first run)
-# Database will be created automatically when you start the server
 ```
+
+Tables are created automatically on first run.
 
 #### 3. Frontend Setup
 
 ```bash
-# Navigate to frontend (from project root)
 cd frontend
-
-# Install dependencies
 npm install
 ```
 
 #### 4. Environment Configuration
 
-Create a `.env` file in the `backend` directory (optional - works without API keys):
+Create a `.env` file in the `backend` directory if you need production or custom settings. The app runs locally without API keys.
 
 ```env
-# Optional: For enhanced AI features (uses free Hugging Face by default)
-OPENAI_API_KEY=your_openai_key_here
+# Local default (omit to use SQLite)
+# DATABASE_URL=sqlite:///./techscope_daily.db
 
-# Optional: Not currently required (using Google News RSS & Wired.com)
-NEWS_API_KEY=your_news_api_key_here
+# Production (Render/Heroku-style postgres:// URLs are normalized automatically)
+# DATABASE_URL=postgresql://user:password@host:5432/techscope
 
-# Optional: Not currently required (using yfinance)
-ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key_here
+# JWT signing key — change this in production
+SECRET_KEY=your-secret-key-here
+
+# Extra browser origins (comma-separated). Localhost and pranavgautam.com are already allowed.
+# BACKEND_CORS_ORIGINS=https://your-frontend.example
+
+# Optional: not required (Hugging Face is used by default)
+# OPENAI_API_KEY=your_openai_key_here
+
+# Optional: not required (RSS feeds are used by default)
+# NEWS_API_KEY=your_news_api_key_here
+
+# Optional: not required (yfinance is used by default)
+# ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key_here
 ```
 
-> **Note**: The app works without API keys! It uses free services (Hugging Face AI, Google News RSS, Wired.com RSS, yfinance) by default.
+For a production frontend build, set the backend URL:
+
+```env
+REACT_APP_API_URL=https://your-backend-host
+```
+
+In local development the frontend proxies API calls to `http://127.0.0.1:8000`.
 
 ---
 
@@ -312,6 +352,8 @@ uvicorn main:app --reload
 
 The backend will be available at: **http://localhost:8000**
 
+On startup it creates/repairs the test user, starts the scheduler, and runs an initial news/stocks/facts fetch.
+
 ### Start Frontend Development Server
 
 ```bash
@@ -323,19 +365,50 @@ The frontend will be available at: **http://localhost:3000**
 
 ### Access Points
 
-- **Frontend Application**: http://localhost:3000
+- **Live App**: https://pranavgautam.com/TechScope-Daily
+- **Local Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
-- **API Documentation (Swagger)**: http://localhost:8000/docs
-- **Alternative API Docs (ReDoc)**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/health
+- **Swagger**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
 ### Default Login / Test Account
 
-- After both servers are running, open the frontend and wait for the loading screen to finish.
+- After both servers are running, open the frontend and wait for the loading screen.
 - You will be redirected to the **Login / Signup** page.
-- You can either create a new account or use the built-in test user:
+- Create a new account or use:
   - Email: `testuser@gmail.com`
   - Password: `Password123!`
-- Once logged in, you can navigate between **News** and **Live Stocks** and log out using the navbar button.
+- Once logged in, switch between **News** and **Live Stocks**, update preferences from the account menu, and log out from the navbar.
+
+---
+
+## 🚢 Deployment
+
+### Frontend (GitHub Pages)
+
+Pushing to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): it builds `frontend/` with Node 18 and deploys the `build` folder to GitHub Pages.
+
+Set the GitHub Actions secret **`REACT_APP_API_URL`** to your hosted API so the production UI talks to the real backend instead of `localhost`.
+
+You can also deploy from the frontend folder:
+
+```bash
+cd frontend
+npm run deploy
+```
+
+`package.json` `homepage` is set to `https://pranavgautam.com/TechScope-Daily`.
+
+### Backend
+
+Host the FastAPI app (for example Render, Fly.io, or a VPS) with:
+
+| Variable | Notes |
+|----------|--------|
+| `DATABASE_URL` | PostgreSQL connection string. `postgres://` is rewritten to `postgresql://`. |
+| `SECRET_KEY` | Used to sign JWTs — do not leave the default in production. |
+| `BACKEND_CORS_ORIGINS` | Extra allowed origins. `http://localhost:3000`, `https://pranavgautam.com`, and `https://www.pranavgautam.com` are included by default. |
 
 ---
 
